@@ -1,0 +1,650 @@
+swagger: "2.0"
+info:
+  description: "Backend 개발 연수 - 게시판 CRUD API | 엄재웅"
+  version: "v1.0.0"
+  title: "Board_service API"
+  contact:
+    email: "jw.eom@alticast.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+basePath: "/board-service/v1.0"
+
+tags:
+- name: "Posts"
+  description: "Post management"
+schemes:
+- "https"
+- "http"
+paths:
+  /posts:
+    # 게시글 목록 조회
+    get:
+      tags:
+      - "Posts"
+      summary: "게시글 목록 조회"
+      description: |
+                ## 게시물을 게시된 시간 순서로 조회한다.
+                ### 카테고리가 추가되면 카테고리에 한정지어서 시간 순으로 조회한다.
+                카테고리 종류
+                  - 종류1
+                  - 종류2
+                  - ...
+                  
+                ### 검색어가 포함되면 카테고리, 제목, 본문에 포함되었는지 검색하여 결과를 준다.
+# end description
+      operationId: "getPosts"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "page"
+        in: "query"
+        description: "페이지 번호"
+        required: true
+        default: 1
+        type: "integer"
+        format: "int"
+      - name: "category"
+        in: "query"
+        type: "string"
+        description: "카테고리"
+      - name: "search"
+        in: "query"
+        type: "string"
+        description: "검색어"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "object"
+            properties:
+              code:
+                type: "integer"
+                format: "int32"
+              message:
+                type: "string"
+              result:
+                type: "object"
+                properties:
+                  pageNo: 
+                    type: "integer"
+                    format: "int32"
+                  posts:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        postNo:
+                          type: "integer"
+                          format: "int32"
+                        title:
+                          type: "string"
+                        author:
+                          type: "string"
+                        createdAt: 
+                          type: "string"
+            example:
+              Response:
+                code: 200
+                message: "ok"
+                result: {
+                  pageNo: 1,
+                  posts: [
+                    {
+                      postNo: 13,
+                      title: "안녕하세요. 반갑습니다!",
+                      author: "작성자1",
+                      createAt: "2021-11-13 14:05:23"
+                    },
+                    {
+                      postNo: 13,
+                      title: "인사드립니다!",
+                      author: "작성자2",
+                      createAt: "2021-11-12 07:05:23"
+                    },  
+                  ]  
+                }
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/404ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+  
+    # 게시글 등록
+    post:
+      tags:
+      - "Posts"
+      summary: "게시글 등록"
+      description: |
+        게시글을 등록한다.
+        
+        - 노출 시간은 옵션으로 등록이 가능하다.
+        - 노출 시간을 등록할 시 해당 시간 이후로 글이 노출됨.
+#end description
+      operationId: "createPost"
+      consumes:
+      - "application/json"
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "작성된 글 정보"
+        required: true
+        schema:
+          $ref: "#/definitions/RequestCreatePost"
+      responses:
+        204: 
+          description: "operation success"
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+          
+  /posts/traces/{id}:
+    # 게시글 수정이력 조회
+    get:
+      tags:
+      - "Posts"
+      summary: "게시글 수정이력 조회"
+      description: |
+        게시글의 수정이력을 조회한다.
+# end description
+      operationId: "getPostTraces"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "게시글 번호"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "operation success"
+          schema:
+            type: "object"
+            properties:
+              code:
+                type: "integer"
+                format: "int32"
+                example: 200
+              message:
+                type: "string"
+                example: "ok"
+              result:
+                type: "array"
+                items:
+                  $ref: "#/definitions/Trace"
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/404ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+
+  /posts/traces/{id}/{idx}:
+    # 게시글 수정이력 상세 조회
+    get:
+      tags:
+      - "Posts"
+      summary: "게시글 수정이력 상세 조회"
+      description: |
+        게시글의 수정이력 상세사항을 조회한다.
+        - id: 게시글 id
+        - idx: 수정 이력 버전
+# end description
+      operationId: "getPostTrace"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "게시글 번호"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "idx"
+        in: "path"
+        description: "수정 이력 버전"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "operation success"
+          schema:
+            type: "object"
+            properties:
+              code:
+                type: "integer"
+                format: "int32"
+                example: 200
+              message:
+                type: "string"
+                example: "ok"
+              result:
+                $ref: "#/definitions/Trace"
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/404ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+            
+  /posts/{id}:
+    parameters:
+      - name: "id"
+        in: "path"
+        description: "게시글 번호"
+        required: true
+        type: "integer"
+        format: "int32"
+        
+    # 게시글 조회
+    get:
+      tags:
+      - "Posts"
+      summary: "게시글 조회"
+      description: |
+        id에 맞는 게시글을 조회한다.
+# end description
+      operationId: "getPost"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "operation success"
+          schema:
+            type: "object"
+            properties:
+              code:
+                type: "integer"
+                format: "int32"
+                example: 200
+              message:
+                type: "string"
+                example: "ok"
+              result:
+                $ref: "#/definitions/Post"
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/404ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+    
+    # 게시글 수정
+    patch:
+      tags:
+      - "Posts"
+      summary: "게시글 수정"
+      description: |
+        게시글을 수정한다.
+        
+        - 게시글 등록시 등록했던 패스워드 입력을 해야 수정이 가능하다.
+# end description
+      operationId: "updatePost"
+      produces:
+      - "application/json"
+      parameters:
+        - name: "body"
+          in: "body"
+          description: "작성된 글 정보"
+          required: true
+          schema:
+            $ref: "#/definitions/RequestUpdatePost"
+      responses:
+        204:
+          description: "operation success"
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/403ErrorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/404ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+          
+    # 게시글 삭제
+    delete:
+      tags:
+      - "Posts"
+      summary: "게시글 삭제"
+      description: |
+        게시글을 삭제한다.
+        
+        - 게시글 등록시 등록했던 패스워드 입력을 해야 삭제가 가능하다.
+# end description
+      operationId: "uploadFile"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "body"
+        in: "body"
+        description: "삭제할 글의 비밀번호"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            password:
+              type: "string"
+              format: "password"
+              description: "비밀번호"
+              example: "1234"
+      responses:
+        204:
+          description: "successful operation"
+        400:
+          description: "Bad Request"
+          schema: 
+            $ref: "#/definitions/400ErrorResponse"
+        403:
+          description: "Forbidden"
+          schema:
+            $ref: "#/definitions/403ErrorResponse"
+        404:
+          description: "Not Found"
+          schema:
+            $ref: "#/definitions/404ErrorResponse"
+        405:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/405ErrorResponse"
+
+#securityDefinitions:
+#  api_key:
+#   type: "apiKey"
+#    name: "api_key"
+#    in: "header"
+    
+definitions:
+  Post:
+    type: "object"
+    description: "게시글"
+    required:
+    - "title"
+    - "content"
+    - "author"
+    properties:
+      id: 
+        type: "integer"
+        format: "int64"
+      category:
+        type: "string"
+        description: "카테고리"
+        enum:
+        - "분류1"
+        - "분류2"
+        - "분류3"
+      title:
+        type: "string"
+        description: "글 제목"
+      content: 
+        type: "string"
+        description: "글 내용"
+      author: 
+        type: "string"
+        description: "작성자"
+      createdAt:
+        type: "string"
+        format: "date-time"
+        description: "작성 날짜"
+      showedAt:
+        type: "string"
+        format: "date-time"
+        description: "게시 날짜"
+      traces:
+        type: "array"
+        items:
+          $ref: "#/definitions/Trace"
+    xml:
+      name: "Post"
+    example:
+      id: 13
+      category: "분류1"
+      title: "안녕하세요. 반갑습니다!"
+      content: "반갑습니다. 잘 부탁드립니다!"
+      author: "작성자1"
+      createAt: "2021-11-13 14:05:23"
+      traces: []
+      
+  RequestCreatePost:
+    type: "object"
+    description: "게시글 생성시의 요청 목록"
+    required:
+    - "category"
+    - "title"
+    - "content"
+    - "author"
+    properties:
+      category:
+        type: "string"
+        description: "카테고리"
+        enum:
+        - "분류1"
+        - "분류2"
+        - "분류3"
+      title:
+        type: "string"
+        description: "글 제목"
+      content: 
+        type: "string"
+        description: "글 내용"
+      author: 
+        type: "string"
+        description: "작성자"
+      showedAt:
+        type: "string"
+        format: "date-time"
+        description: "게시 날짜"
+    xml:
+      name: "Post"
+    example:
+      category: "분류1"
+      title: "안녕하세요. 반갑습니다!"
+      content: "반갑습니다. 잘 부탁드립니다!"
+      author: "작성자1"
+      showedAt: "2021-11-13 14:05:23"
+  
+  RequestUpdatePost:
+    type: "object"
+    description: "게시글 수정시의 필요 목록"
+    required:
+    - "password"
+    properties:
+      category:
+        type: "string"
+        description: "카테고리"
+        enum:
+        - "분류1"
+        - "분류2"
+        - "분류3"
+      title:
+        type: "string"
+        description: "글 제목"
+      content: 
+        type: "string"
+        description: "글 내용"
+      password:
+        type: "string"
+        format: "password"
+      author: 
+        type: "string"
+        description: "작성자"
+    xml:
+      name: "Post"
+    example:
+      category: "분류1"
+      title: "안녕하세요. 반갑습니다!"
+      content: "반갑습니다. 잘 부탁드립니다!"
+      password: "1234"
+      author: "작성자1"
+      
+  Trace:
+    type: "object"
+    description: "게시글 수정이력 상세"
+    required:
+    - "title"
+    - "content"
+    - "author"
+    - "editor"
+    properties:
+      idx:
+        type: "integer"
+        format: "int64"
+        description: "수정된 글의 버전"
+      category:
+        type: "string"
+        description: "카테고리"
+        enum:
+        - "분류1"
+        - "분류2"
+        - "분류3"
+      title:
+        type: "string"
+        description: "글 제목"
+      content: 
+        type: "string"
+        description: "글 내용"
+      author: 
+        type: "string"
+        description: "작성자"
+      editor:
+        type: "string"
+        description: "수정자"
+      editedAt:
+        type: "string"
+        format: "date-time"
+        description: "수정 날짜"
+    xml:
+      name: "Trace"
+    example:
+      idx: 1
+      category: "분류1"
+      title: "안녕하세요."
+      content: "처음이라 많이 떨립니다. 잘 부탁드립니다!"
+      author: "작성자1"
+      editor: "작성자1"
+      editedAt: "2021-11-14 11:03:11"
+    
+  Category:
+    type: "object"
+    description: "카테고리"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+    xml:
+      name: "Category"
+  
+#  Tag:
+#    type: "object"
+#    properties:
+#      id:
+#        type: "integer"
+#        format: "int64"
+#      name:
+#        type: "string"
+#    xml:
+#      name: "Tag"
+  
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+      result:
+        type: "string"
+        
+  400ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 400
+      message:
+        type: "string"
+        
+  403ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 403
+      message:
+        type: "string"
+        
+  404ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 404
+      message:
+        type: "string"
+        
+  405ErrorResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+        example: 405
+      message:
+        type: "string"
+        
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

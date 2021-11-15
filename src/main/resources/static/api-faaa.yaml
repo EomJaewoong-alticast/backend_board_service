@@ -1,0 +1,6003 @@
+swagger: "2.0"
+info:
+  version: v1.0.1
+  title: Butler-service API
+  contact:
+    email: "trdev1@alticast.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+basePath: /butler-service/v1
+tags:
+  - name: "supplier"
+    description: "Manage supplier"
+  - name: "code"
+    description: "Manage code"
+  - name: "withdraw"
+    description: "Manage withdraw"
+  - name: "voc"
+    description: "Manage voc (will be deprecated. use report)"
+  - name: "review"
+    description: "Manage review"
+  - name: "member-label"
+    description: "Manage member-label"
+  - name: "faq"
+    description: "Manage faqs"
+  - name: "corp-lease"
+    description: "Manage corp-lease"
+  - name: "inquire"
+    description: "Manage inquire"
+  - name: "notice"
+    description: "Manage notice"
+  - name: "popup"
+    description: "Manage popup"
+  - name: "service-operator"
+    description: "Manage service-operator"
+  - name: "so-system"
+    description: "Manage so-system"
+  - name: "term"
+    description: "Manage term"
+  - name: "address"
+    description: "Manage address"
+  - name: "holiday"
+    description: "Manage holiday"
+  - name: "report"
+    description: "Manage report"
+  - name: "distribution-channel"
+    description: "Manage distribution channel Information"
+
+schemes:
+  - https
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+security:
+  - ApiKeyAuth: []
+paths:
+  /suppliers/{supplierId}:
+    get:
+      tags:
+        - "supplier"
+      summary: "제휴사 상세 조회"
+      description: "제휴사 상세 조회"
+      parameters:
+        - name: supplierId
+          in: path
+          description: "상세조회할 제휴사 아이디"
+          required: true
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseSupplier"
+
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    put:
+      tags:
+        - "supplier"
+      summary: "제휴사 수정"
+      description: "제휴사 수정"
+      parameters:
+        - name: supplierId
+          in: path
+          description: "수정할 제휴사 아이디"
+          required: true
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+        - name: supplier
+          in: body
+          description: "수정할 제휴사 정보"
+          required: true
+          schema:
+            $ref: "#/definitions/supplier"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseSupplier"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    delete:
+      tags:
+        - "supplier"
+      summary: "제휴사 삭제"
+      description: "제휴사 삭제"
+      parameters:
+        - name: supplierId
+          in: path
+          description: "삭제할 제휴사 아이디"
+          required: true
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInteger"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /suppliers:
+    get:
+      tags:
+        - "supplier"
+      summary: "제휴사의 정보를 검색한다."
+      description: "q를 입력하지 않으면 전체를 조회하고, q가 존재하면 조건에 맞는 제휴사들을 반환한다."
+      parameters:
+        - name: size
+          in: query
+          description: "반환받을 데이터 개수"
+          required: false
+          type: number
+          default: 10
+        - name: page
+          in: query
+          description: "반환받을 페이지 번호. 0부터 시작"
+          required: false
+          type: number
+          default: 0
+        - name: q
+          in: query
+          description: "검색할 데이터들을 입력한다. 문자열은 일부만 일치해도 반환(regex), bool, int 등의 값은 완전 일치해야 반환한다."
+          required: false
+          type: string
+          default: "address=서초구,supplierName=supplier1,contract.contractId=1586329386,contract.useStatus=true"
+        - name: startTime
+          in: query
+          description: "initDate를 기준으로 기간을 조회할 수 있다. 기간의 시작 시간 (epoch time (second))"
+          required: false
+          type: number
+          default: 0
+        - name: endTime
+          in: query
+          description: "initDate를 기준으로 기간을 조회할 수 있다. 기간의 시작 시간 (epoch time (second))"
+          required: false
+          type: number
+          default: 4103691203000
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseSupplierList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    post:
+      tags:
+        - "supplier"
+      summary: "제휴사 등록"
+      description: "제휴사 등록"
+      parameters:
+        - name: supplier
+          in: body
+          description: "등록할 객체"
+          required: true
+          schema:
+            $ref: "#/definitions/supplier"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseSupplier"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /supplier/{supplierId}/contract:
+    patch:
+      tags:
+        - "supplier"
+      summary: "제휴사에 계약 정보를 추가한다."
+      description: "제휴사에 계약 정보를 추가한다."
+      parameters:
+        - name: supplierId
+          in: path
+          description: "추가할 제휴사의 아이디"
+          required: true
+          type: string
+          default: "8037af48fb654da1bb906fd20ec724b6"
+        - name: contract
+          in: body
+          description: "추가할 계약 정보"
+          required: true
+          schema:
+            $ref: "#/definitions/contract"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseSupplier"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /supplier/{supplierId}/contract/{contractId}:
+    delete:
+      tags:
+        - "supplier"
+      summary: "제휴사에 계약 정보를 삭제한다."
+      description: "제휴사에 계약 정보를 삭제한다."
+      parameters:
+        - name: supplierId
+          in: path
+          description: "삭제할 계약 정보가 들어있는 제휴사의 아이디"
+          required: true
+          type: string
+          default: "8037af48fb654da1bb906fd20ec724b6"
+        - name: contractId
+          in: path
+          description: "삭제할 제휴사 계약 아이디. deleteFlag가 true가 되고 진짜로 삭제되지는 않는다."
+          required: true
+          type: string
+          default: "8037af48fb654da1bb906fd20ec724b7"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInteger"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    patch:
+      tags:
+        - "supplier"
+      summary: "제휴사에 계약 정보를 수정한다."
+      description: "제휴사에 계약 정보를 추가한다."
+      parameters:
+        - name: supplierId
+          in: path
+          description: "수정할 제휴사의 아이디"
+          required: true
+          type: string
+          default: "8037af48fb654da1bb906fd20ec724b6"
+        - name: contractId
+          in: path
+          description: "수정할 제휴사 계약 아이디."
+          required: true
+          type: string
+          default: "8037af48fb654da1bb906fd20ec724b7"
+        - name: contract
+          in: body
+          description: "수정할 계약 정보"
+          required: true
+          schema:
+            $ref: "#/definitions/contract"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseSupplier"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /supplier/name/check:
+    get:
+      tags:
+        - "supplier"
+      summary: "제휴사 이름을 중복체크한다."
+      description: "제휴사 이름을 중복체크한다."
+      parameters:
+        - name: name
+          in: query
+          description: "중복체크할 제휴사의 이름"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /codes:
+    get:
+      tags:
+        - "code"
+      summary: 코드 전체 리스트
+      description: "코드 전체 리스트를 조회한다."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCodeList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /code:
+    get:
+      tags:
+        - "code"
+      summary: 코드 단일 조회
+      description: "코드 id로 코드를 조회한다."
+      parameters:
+        - name: id
+          in: query
+          description: 코드 아이디
+          required: true
+          type: string
+          default: "3b51653d70e24e7c998cb14b8dc7b487"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCode"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    post:
+      tags:
+        - "code"
+      summary: 코드 생성
+      description: "코드를 생성한다."
+      parameters:
+        - name: code
+          in: body
+          description: code
+          required: true
+          schema:
+            $ref: "#/definitions/code"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCode"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    put:
+      tags:
+        - "code"
+      summary: 코드 수정
+      description: "코드를 수정한다."
+      parameters:
+        - name: code
+          in: body
+          description: code
+          required: true
+          schema:
+            $ref: "#/definitions/codePost"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCode"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "code"
+      summary: 코드 삭제
+      description: "코드를 삭제한다."
+      parameters:
+        - name: id
+          in: query
+          description: 코드 아이디
+          required: true
+          type: string
+          default: "27c05a8f840d48c2b2b92fd7beffaef2"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseDeleteResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /code/name:
+    get:
+      tags:
+        - "code"
+      summary: 코드명으로 단일 조회
+      description: "코드 이름으로 코드를 조회한다. 필드명 : code"
+      parameters:
+        - name: name
+          in: query
+          description: 코드명
+          required: true
+          type: string
+          default: "현대"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCodeListNoTotal"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /withdraws:
+    get:
+      tags:
+        - "withdraw"
+      summary: 탈퇴사유 전체 리스트
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: startDate
+          in: query
+          description: 등록날짜 기준 검색 시작시간
+          required: true
+          type: string
+          default: "0"
+        - name: endDate
+          in: query
+          description: 등록날짜 기준 검색 종료시간
+          required: true
+          type: string
+          default: "4105574483000"
+
+      description: "탈퇴사유들을 조회한다."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseWithdrawList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /withdraw:
+    get:
+      tags:
+        - "withdraw"
+      summary: 탈퇴사유 상세보기
+      parameters:
+        - name: id
+          in: query
+          description: 탈퇴사유 id
+          required: true
+          type: string
+          default: "1580472747"
+
+      description: "탈퇴사유의 상세 정보를 조회한다."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseWithdraw"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    post:
+      tags:
+        - "withdraw"
+      summary: 탈퇴사유 등록
+      parameters:
+        - name: body
+          in: body
+          description: 탈퇴사유 정보
+          required: true
+          schema:
+            $ref: "#/definitions/withdrawPost"
+      description: "탈퇴사유를 등록한다."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseWithdraw"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /withdraw/content:
+    patch:
+      tags:
+        - "withdraw"
+      summary: 탈퇴사유의 content 를 업데이트한다.
+      parameters:
+        - name: id
+          in: query
+          description: 탈퇴사유 id
+          required: true
+          type: string
+          default: ""
+        - name: body
+          in: body
+          description: 업데이트할 내용. 입력하지 않거나
+          required: false
+          schema:
+            $ref: "#/definitions/updateContent"
+      description: "탈퇴사유 내용 필드를 업데이트한다."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseWithdraw"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /vocs:
+    get:
+      tags:
+        - "voc"
+      summary: 고객 불만 전체 리스트 조회
+      parameters:
+        - name: startDate
+          in: query
+          description: 등록날짜 기준 검색 시작시간
+          required: true
+          type: string
+          default: "0"
+        - name: endDate
+          in: query
+          description: 등록날짜 기준 검색 종료시간
+          required: true
+          type: string
+          default: "4105574483000"
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+      description: 고객 불만 전체 조회. 검색 기간이 주어지지 않으면 전체를 조회한다.
+      responses:
+        200:
+          description: "{
+                        status:success/fail,
+                        message:
+                        }"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /voc/userId/{userId}:
+    get:
+      tags:
+        - "voc"
+      summary: 유저 별 불만 사항 리스트 조회
+      parameters:
+        - name: userId
+          in: path
+          description: 작성자
+          required: true
+          type: string
+          default: "123"
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+      description: 유저 별 불만 사항을 전체 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseVocList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /voc/bookingId:
+    get:
+      tags:
+        - "voc"
+      summary: 예약 별 불만 사항을 전체 조회한다.
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: bookingId
+          in: query
+          description: 여러 bookingId를 조회할 수 있다. bookingId별 구분은 콤마(,)로 한다.
+          required: true
+          type: string
+          default: "asdf,booking2"
+      description:  예약 별 불만 사항을 전체 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseVocList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /voc/{id}:
+    get:
+      tags:
+        - "voc"
+      summary: 불만 사항의 상세 정보를 조회한다.
+      parameters:
+        - name: id
+          in: path
+          description: 불만사항(voc)의 id
+          required: true
+          type: string
+          default: "asdf1580897164"
+      description:  불만 사항의 상세 정보를 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseVoc"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    put:
+      tags:
+        - "voc"
+      summary: 불만 사항의 정보를 수정한다.
+      parameters:
+        - name: id
+          in: path
+          description: 불만사항(voc)의 id
+          required: true
+          type: string
+          default: "asdf1580897164"
+        - name: body
+          in: body
+          description: 수정된 불만사항 정보
+          required: true
+          schema:
+            $ref: "#/definitions/voc"
+      description:  불만 사항의 상세 정보를 수정한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseVoc"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /voc:
+    post:
+      tags:
+        - "voc"
+      summary: 불만사항을 등록한다.
+      parameters:
+        - name: body
+          in: body
+          description: 불만사항 정보
+          required: true
+          schema:
+            $ref: "#/definitions/voc"
+      description:  불만사항을 등록한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseVoc"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "voc"
+      summary: 불만사항들을 삭제한다.
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 불만사항의 id 리스트
+          required: true
+          default: "asdf1580897168, String1581500384"
+      description:  불만사항을 삭제한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseDeleteResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /reviews:
+    get:
+      tags:
+        - "review"
+      summary: 리뷰 전체를 조회한다.
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: type
+          in: query
+          description: 필터링 타입 (별점 - score, 사용자아이디 - userId, 오브젝트아이디 - objectId, all)
+          required: true
+          type: string
+          default: "userId"
+        - name: value
+          in: query
+          description: type에 대한 값
+          required: true
+          type: string
+          default: "123"
+      description:  리뷰들을 전체 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseReviewList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /review:
+    get:
+      tags:
+        - "review"
+      summary: 리뷰 상세 조회
+      parameters:
+        - name: id
+          in: query
+          description: 리뷰 Id
+          required: true
+          type: string
+          default: "asdf1580961347"
+      description:  리뷰의 상세 정보를 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseReview"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    post:
+      tags:
+        - "review"
+      summary: 리뷰를 등록한다.
+      parameters:
+        - name: body
+          in: body
+          description: 리뷰
+          required: true
+          schema:
+            $ref: "#/definitions/review"
+      description:  리뷰를 등록한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseReview"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    put:
+      tags:
+        - "review"
+      summary: 리뷰를 수정한다.
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 수정할 리뷰 id
+          required: true
+          default: "2019110819420001583962394"
+        - name: body
+          in: body
+          description: 수정할 리뷰 정보
+          required: true
+          schema:
+            $ref: "#/definitions/review"
+      description:  리뷰를 수정한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseReview"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "review"
+      summary: 리뷰를 삭제한다.
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 삭제할 리뷰 id
+          required: true
+          default: ""
+      description:  리뷰를 삭제한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseDeleteResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /member-labels:
+    get:
+      tags:
+        - "member-label"
+      summary: 회원등급 전체 조회
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+      description:  회원등급 전체를 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseMemberLabelList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /member-label:
+    post:
+      tags:
+        - "member-label"
+      summary: 회원등급 등록
+      parameters:
+        - name: body
+          in: body
+          description: 회원등급
+          required: true
+          schema:
+            $ref: "#/definitions/memberLabelPost"
+      description: 회원등급을 등록한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseMemberLabel"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    get:
+      tags:
+        - "member-label"
+      summary: 회원등급 상세 조회
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 회원등급 id
+          required: true
+          default: "1583962530"
+      description: 회원등급 정보를 상세 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseMemberLabel"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    put:
+      tags:
+        - "member-label"
+      summary: 회원등급 수정
+      parameters:
+        - name: body
+          in: body
+          description: 수정할 회원등급
+          required: true
+          schema:
+            $ref: "#/definitions/memberLabel"
+      description: 회원등급 정보를 수정한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseMemberLabel"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  #  /lease:
+  #    post:
+  #      tags:
+  #        - "lease"
+  #      summary: so-렌터카업체 위탁 차량 등록
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: ""
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/leasePost"
+  #      description: so-렌터카업체 위탁 차량을 등록한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    get:
+  #      tags:
+  #        - "lease"
+  #      summary: so-렌터카업체 위탁차량 정보 상세 조회
+  #      parameters:
+  #        - name: id
+  #          type: string
+  #          in: query
+  #          description: id
+  #          required: true
+  #          default: "1583962611"
+  #      description: so-렌터카업체 위탁차량 정보를 상세 조회
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    put:
+  #      tags:
+  #        - "lease"
+  #      summary: so-렌터카업체 위탁차량 수정
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: 수정할 위탁차량 정보
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/lease"
+  #      description: so-렌터카업체 위탁차량을 수정한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+
+  #  /leases:
+  #    get:
+  #      tags:
+  #        - "lease"
+  #      summary: so-렌터카업체 위탁차량 전체 조회
+  #      parameters:
+  #        - name: size
+  #          in: query
+  #          description: 한 페이지를 구성하는 값 개수
+  #          required: true
+  #          type: string
+  #          default: "10"
+  #        - name: page
+  #          in: query
+  #          description: 페이지 번호
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: startDate
+  #          in: query
+  #          description: 등록일자 기준 검색 시작시간
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: endDate
+  #          in: query
+  #          description: 등록일자 기준 검색 종료시간
+  #          required: true
+  #          type: string
+  #          default: "4105574483000"
+  #      description:  so-렌터카업체 위탁차량을 전체 조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+
+  #  /lease/contract/{contractId}:
+  #    get:
+  #      tags:
+  #        - "lease"
+  #      summary: 계약  위탁 관리 내역 조회
+  #      parameters:
+  #        - name: size
+  #          in: query
+  #          description: 한 페이지를 구성하는 값 개수
+  #          required: true
+  #          type: string
+  #          default: "10"
+  #        - name: page
+  #          in: query
+  #          description: 페이지 번호
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: contractId
+  #          in: path
+  #          description: so-렌터카업체 계약 Id
+  #          required: true
+  #          type: string
+  #          default: "1580808310"
+  #      description:  so-렌터카업체 위탁차량을 전체 조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #  /lease/vehicle/{vehicleId}:
+  #    get:
+  #      tags:
+  #        - "lease"
+  #      summary: 오브젝트 별 위탁 관리 내역 조회
+  #      parameters:
+  #        - name: size
+  #          in: query
+  #          description: 한 페이지를 구성하는 값 개수
+  #          required: true
+  #          type: string
+  #          default: "10"
+  #        - name: page
+  #          in: query
+  #          description: 페이지 번호
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: vehicleId
+  #          in: path
+  #          description: objectUuid, 차량의 경우 vin
+  #          required: true
+  #          type: string
+  #          default: "KMHEM42APXA123458"
+  #      description: 오브젝트 별 위탁 관리 내역을 조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+
+  /faqs:
+    get:
+      tags:
+        - "faq"
+      summary: faq 전체 조회
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: startDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: true
+          type: string
+          default: "0"
+        - name: endDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: true
+          type: string
+          default: "4105574483000"
+        - name: category
+          in: query
+          description: 검색 카테고리. types에 미리 등록해놓은 faqType이다.
+          required: false
+          type: string
+          default: ""
+        - name: searchWord
+          in: query
+          description: 검색어
+          required: false
+          type: string
+          default: ""
+      description: faq를 전체 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseFaqList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /faq:
+    post:
+      tags:
+        - "faq"
+      summary: faq 등록
+      parameters:
+        - name: body
+          in: body
+          description: faq
+          required: true
+          schema:
+            $ref: "#/definitions/faqPost"
+      description: faq를 등록한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseFaq"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    get:
+      tags:
+        - "faq"
+      summary: faq 상세보기
+      parameters:
+        - name: faqId
+          type: string
+          in: query
+          description: faq Id
+          required: true
+          default: "userId1583962915"
+      description: faq 상세 정보를 조회한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseFaq"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    put:
+      tags:
+        - "faq"
+      summary: faq 수정
+      parameters:
+        - name: body
+          in: body
+          description: 수정할 faq
+          required: true
+          schema:
+            $ref: "#/definitions/faq"
+      description: faq를 수정한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseFaq"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "faq"
+      summary: faq 삭제
+      parameters:
+        - name: faqId
+          type: string
+          in: query
+          description: 삭제할 faq 리스트. 콤마(,)로 구분한다.
+          required: true
+          default: ""
+      description: faq들을 삭제한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseDeleteResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  #
+  #  /faq/category:
+  #    post:
+  #      tags:
+  #        - "butler"
+  #      summary: faq 카테고리 등록
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: faq의 카테고리
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/typesFaqType"
+  #      description: faq type(category)를 등록한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    get:
+  #      tags:
+  #        - "butler"
+  #      summary: faq category 전체 조회
+  #      description: faq category들을 조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    put:
+  #      tags:
+  #        - "butler"
+  #      summary: faq category
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: 수정할 faq category
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/typesFaqTypePut"
+  #      description: faq category를 수정한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    delete:
+  #      tags:
+  #        - "butler"
+  #      summary: faq category들을 삭제
+  #      parameters:
+  #        - name: faqType
+  #          type: string
+  #          in: query
+  #          description: 삭제할 faqType(category) 리스트. 콤마(,)로 구분한다.
+  #          required: true
+  #          default: ""
+  #      description: faq category들을 삭제한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+
+  #  /contracts:
+  #    get:
+  #      tags:
+  #        - "contract"
+  #      summary: so-렌터카업체 계약 전체 조회
+  #      parameters:
+  #        - name: size
+  #          in: query
+  #          description: 한 페이지를 구성하는 값 개수
+  #          required: true
+  #          type: string
+  #          default: "10"
+  #        - name: page
+  #          in: query
+  #          description: 페이지 번호
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: startDate
+  #          in: query
+  #          description: 등록일자 기준 검색 시작 시간
+  #          required: false
+  #          type: string
+  #          default: ""
+  #        - name: endDate
+  #          in: query
+  #          description: 등록일자 기준 검색 시작 시간
+  #          required: false
+  #          type: string
+  #          default: ""
+  #        - name: endDuration
+  #          in: query
+  #          description: 계약 마지막날로부터 남은 기간(일단위 입력)
+  #          required: false
+  #          type: string
+  #          default: " "
+  #      description: so-렌터카업체 계약 전체를 조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #  /contract:
+  #    post:
+  #      tags:
+  #        - "contract"
+  #      summary: so-렌터카업체 계약 등록
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: 계약
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/contractPost"
+  #      description: so-렌터카업체 계약을 등록한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    get:
+  #      tags:
+  #        - "contract"
+  #      summary: so-렌터카업체 계약을 상세조회
+  #      parameters:
+  #        - name: id
+  #          type: string
+  #          in: query
+  #          description: contract id
+  #          required: true
+  #          default: "1583963413"
+  #      description: so-렌터카업체 계약을 상세조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    put:
+  #      tags:
+  #        - "contract"
+  #      summary: so-렌터카업체 계약 수정
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: 수정할 계약 정보
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/contract"
+  #      description: so-렌터카업체 계약을 수정한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #  /corp-contracts:
+  #    get:
+  #      tags:
+  #        - "corp-contract"
+  #      summary: 렌터카업체 or SO가 법인에게 빌려주었다는 계약정보 관리
+  #      parameters:
+  #        - name: size
+  #          in: query
+  #          description: 한 페이지를 구성하는 값 개수
+  #          required: true
+  #          type: string
+  #          default: "10"
+  #        - name: page
+  #          in: query
+  #          description: 페이지 번호
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: startDate
+  #          in: query
+  #          description: 등록일자 기준 검색 시작 시간
+  #          required: false
+  #          type: string
+  #          default: " "
+  #        - name: endDate
+  #          in: query
+  #          description: 등록일자 기준 검색 시작 시간
+  #          required: false
+  #          type: string
+  #          default: " "
+  #        - name: endDuration
+  #          in: query
+  #          description: 계약 마지막날로부터 남은 기간(day)
+  #          required: false
+  #          type: string
+  #          default: " "
+  #      description: 법인계약 전체 리스트를 조회한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+
+  #  /corp-contract:
+  #    post:
+  #      tags:
+  #        - "corp-contract"
+  #      summary: 법인계약 등록
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: 계약
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/corp-contract"
+  #      description: so-렌터카업체 계약을 등록한다.
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    get:
+  #      tags:
+  #        - "corp-contract"
+  #      summary: 법인계약 상세조회
+  #      parameters:
+  #        - name: id
+  #          type: string
+  #          in: query
+  #          description: contract id
+  #          required: true
+  #          default: "1583971533"
+  #      description: 법인계약 상세조회
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #
+  #    put:
+  #      tags:
+  #        - "corp-contract"
+  #      summary: 법인계약 수정
+  #      parameters:
+  #        - name: body
+  #          in: body
+  #          description: 수정할 계약 정보
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/corp-contractPut"
+  #      description: 법인계약 수정
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+
+  /corp-leases:
+    get:
+      tags:
+        - "corp-lease"
+      summary: 법인이 Raidea 예약 서비스를 사용하기 위해 법인의 차량을 등록하여 사용함.
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: startDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: string
+          default: " "
+        - name: endDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: string
+          default: " "
+      description: 법인차량 전체 리스트 조회
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCorpLeaseList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /corp-lease:
+    post:
+      tags:
+        - "corp-lease"
+      summary: 법인이 Raidea 예약 서비스를 사용하기 위해 법인의 차량을 등록하여 사용함.
+      parameters:
+        - name: body
+          in: body
+          description: 위탁차량 등록
+          required: true
+          schema:
+            $ref: "#/definitions/corp-lease"
+      description: 법인 차량을 Raidea에 등록한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCorpLease"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    get:
+      tags:
+        - "corp-lease"
+      summary: 법인차량 상세보기
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: corp-lease id
+          required: true
+          default: ""
+      description: 법인차량 상세보기
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCorpLease"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    put:
+      tags:
+        - "corp-lease"
+      summary: 법인차량 수정
+      parameters:
+        - name: body
+          in: body
+          description: 수정할 정보
+          required: true
+          schema:
+            $ref: "#/definitions/corp-lease"
+      description: 법인차량 수정
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCorpLease"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /corp-lease/contract/{corpContractId}:
+    get:
+      tags:
+        - "corp-lease"
+      summary: 법인차량 내역 조회(계약아이디로 조회)
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: corpContractId
+          in: path
+          description: 위탁 계약서 아이디
+          required: true
+          type: string
+          default: " "
+      description: 법인차량 내역 조회(계약아이디로 조회)
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCorpLeaseList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /corp-lease/vehicle/{vehicleId}:
+    get:
+      tags:
+        - "corp-lease"
+      summary: 법인차량 내역 조회(objectUuid로 조회)
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: vehicleId
+          in: path
+          description: 오브젝트의 uuid (차량의 경우 vin)
+          required: true
+          type: string
+          default: " "
+      description: 법인차량 내역 조회(objectUuid로 조회)
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseCorpLeaseList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /inquires:
+    get:
+      tags:
+        - "inquire"
+      summary: 1:1문의 전체 조회
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: number
+          default: 10
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: number
+          default: 0
+        - name: startDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: number
+          default: 0
+        - name: endDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: number
+          default: 4105574483000
+        - name: searchType
+          in: query
+          description: 검색조건
+          required: false
+          type: string
+          default: ""
+        - name: searchWord
+          in: query
+          description: 검색키워드
+          required: false
+          type: string
+          default: ""
+        - name: corp
+          in: query
+          description: 법인명
+          required: false
+          type: string
+          default: ""
+      description: 1:1문의 전체 조회
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInquireList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /inquire:
+    post:
+      tags:
+        - "inquire"
+      summary: 1:1문의 등록
+      parameters:
+        - name: body
+          in: body
+          description: 1:1문의
+          required: true
+          schema:
+            $ref: "#/definitions/inquire"
+        - name: memberId
+          in: header
+          description: 작성자
+          required: true
+          type: string
+      description: 1:1문의 등록
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInquire"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    get:
+      tags:
+        - "inquire"
+      summary: 1:1문의 상세보기
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 1:1문의 id
+          required: true
+          default: ""
+      description: "ks.ko@alticast.com1581230641"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInquire"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "inquire"
+      summary: 1:1문의 삭제
+      parameters:
+        - name: id
+          in: query
+          type: string
+          description: 삭제할 문의 아이디(쉼표로 여러아이디 구별)
+          required: true
+          default: "[ks.ko@alticast.com]1581230462"
+        - name: memberId
+          in: header
+          type: string
+          description: 등록인 id
+          required: true
+          default: "ks.ko@alticast.com"
+        - name: pw
+          in: header
+          type: string
+          description: 1:1문의 비밀번호
+          required: false
+          default: "1234"
+      description: ""
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInteger"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /inquire/answer:
+    post:
+      tags:
+        - "inquire"
+      summary: 1:1문의 답변 등록
+      parameters:
+        - name: body
+          in: body
+          description: 1:1문의답변
+          required: true
+          schema:
+            $ref: "#/definitions/answerInfoPost"
+      description: 1:1문의 답변 등록
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInquireAnswer"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /inquire/{userUuid}:
+    get:
+      tags:
+        - "inquire"
+      summary: 나의 1:1문의 내역 조회
+      parameters:
+        - name: userUuid
+          in: path
+          description: 등록자 userUuid
+          type: string
+          required: true
+      description: 나의 1:1문의 내역 조회
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseInquireListNoTotal"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /notices:
+    get:
+      tags:
+        - "notice"
+      summary: 전체 공지사항조회
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: searchStartDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: string
+          default: ""
+        - name: searchEndDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: string
+          default: ""
+        - name: category
+          in: query
+          description: 카테고리(공지사항, 이벤트)
+          required: false
+          type: string
+          default: ""
+        - name: exposureType
+          in: query
+          description: 공지사항 노출범위(전체 , 법인)
+          required: false
+          type: string
+          default: ""
+        - name: searchWordType
+          in: query
+          description: 검색조건(제목, 내용)
+          required: false
+          type: string
+          default: ""
+        - name: searchWord
+          in: query
+          description: 검색키워드
+          required: false
+          type: string
+          default: ""
+      description: 전체 공지사항조회
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseNoticeList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /notice:
+    post:
+      tags:
+        - "notice"
+      summary: 공지사항 등록
+      parameters:
+        - name: body
+          in: body
+          description: 공지사항
+          required: true
+          schema:
+            $ref: "#/definitions/notice"
+      description: 공지사항 등록
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseNotice"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    put:
+      tags:
+        - "notice"
+      summary: 공지사항 수정
+      parameters:
+        - name: id
+          in: query
+          required: true
+          type: string
+          default: "2a57d35c0df74f549fe1b0ddc424a87b"
+        - name: body
+          in: body
+          description: 공지사항
+          required: true
+          schema:
+            $ref: "#/definitions/notice"
+      description: 공지사항 수정
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseNotice"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    get:
+      tags:
+        - "notice"
+      summary: 공지사항 상세보기
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 공지사항 id
+          required: true
+          default: "2a57d35c0df74f549fe1b0ddc424a87b"
+      description: "공지사항 상세보기"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseNotice"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "notice"
+      summary: 공지사항 삭제
+      parameters:
+        - name: id
+          in: query
+          type: string
+          description: 삭제할 공지사항 아이디(쉼표로 여러아이디 구별)
+          required: true
+          default: " "
+      description: "공지사항 삭제"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseDeleteResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /popups:
+    get:
+      tags:
+        - "popup"
+      summary: 프론트앱 팝업 전체 조회
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "0"
+        - name: startDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: string
+          default: " "
+        - name: endDate
+          in: query
+          description: 등록일자 기준 검색 시작 시간
+          required: false
+          type: string
+          default: " "
+        - name: searchType
+          in: query
+          description: 검색조건(제목, 내용)
+          required: false
+          type: string
+          default: " "
+        - name: searchWord
+          in: query
+          description: 검색키워드
+          required: false
+          type: string
+          default: " "
+      description: ""
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responsePopupList"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /popup:
+    post:
+      tags:
+        - "popup"
+      summary: 프론트앱 팝업 등록
+      parameters:
+        - name: body
+          in: body
+          description: 프론트앱 팝업
+          required: true
+          schema:
+            $ref: "#/definitions/popup"
+      description: 프론트앱 팝업 등록
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responsePopup"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    get:
+      tags:
+        - "popup"
+      summary: 프론트앱 팝업 상세보기
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 프론트앱 팝업 id
+          required: true
+          default: "ks.ko@alticast.com1581329777"
+      description: "프론트앱 팝업 상세보기"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responsePopup"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+    delete:
+      tags:
+        - "popup"
+      summary: 프론트앱 팝업 삭제
+      parameters:
+        - name: id
+          in: query
+          type: string
+          description: 삭제할 공지사항 아이디(쉼표로 여러아이디 구별)
+          required: true
+          default: "ks.ko@alticast.com1581329777"
+      description: "프론트앱 팝업 삭제"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responsePopup"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  #  /so-list:
+  #    get:
+  #      tags:
+  #        - "service-operator"
+  #      summary: Service Operator(SO) 전체조회
+  #      parameters:
+  #        - name: size
+  #          in: query
+  #          description: 한 페이지를 구성하는 값 개수
+  #          required: true
+  #          type: string
+  #          default: "10"
+  #        - name: page
+  #          in: query
+  #          description: 페이지 번호
+  #          required: true
+  #          type: string
+  #          default: "0"
+  #        - name: q
+  #          in: query
+  #          description: "검색할 쿼리. {검색할 필드명}={검색할 값} 쌍을 콤마(,)로 구분하여 조회한다. 이 값이 비어있으면 전체를 조회한다."
+  #          required: false
+  #          type: string
+  #          default: "clientId=xxx,soNm=xxx"
+  #        - name: startTime
+  #          in: query
+  #          description: "서비스 오퍼레이터 생성일을 기준으로 검색할 시작 시간"
+  #          required: false
+  #          type: number
+  #          default: 0
+  #        - name: endTime
+  #          in: query
+  #          description: "서비스 오퍼레이터 생성일을 기준으로 검색할 종료 시간"
+  #          required: false
+  #          type: number
+  #          default: 4109795570000
+  #        - name: sort
+  #          in: query
+  #          description: "서비스 오퍼레이터 생성일을 기준으로 정렬. asc, desc를 입력할 수 있다."
+  #          required: false
+  #          type: string
+  #          default: "DESC"
+  #      description: "서비스 오퍼레이터를 전체 조회한다. 검색기능을 사용할 수 있다."
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  /so:
+    post:
+      tags:
+        - "service-operator"
+      summary: SO 등록
+      parameters:
+        - name: body
+          in: body
+          description: SO
+          required: true
+          schema:
+            $ref: "#/definitions/ServiceOperator"
+      description: SO 등록
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    get:
+      tags:
+        - "service-operator"
+      summary: SO 상세보기
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: SO id
+          required: true
+          default: "d9852ee0d7964fa6b70f344c59307366"
+      description: "SO 상세보기"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseServiceOperator"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    put:
+      tags:
+        - "service-operator"
+      summary: SO 수정
+      parameters:
+        - name: id
+          in: query
+          description: SO
+          required: true
+          type: string
+          default: "d9852ee0d7964fa6b70f344c59307366"
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/ServiceOperator"
+      description: so 수정
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    patch:
+      tags:
+        - "service-operator"
+      summary: SO 일부수정
+      parameters:
+        - name: soUuid
+          in: query
+          description: soUuid
+          required: true
+          type: string
+          default: "258db961670e432787fb8d8893692e49"
+        - name: serviceNm
+          in: query
+          description: "serviceNm (SOSystem의 이름과 동일)\n
+                                      있을 경우 serviceNm이 일치하는 soService에서 특정필드만 변경가능하다. \n
+                                      없을 경우 필드 전체를 replace하므로 필수값들은 반드시 입력해야한다. \n
+                                      (필수값 : useStatus, serviceNm, serviceLogo, timeZoneUse, iipmYn, rfidYn ,touchPadYn, aqsYn, fobYn, keyBoxYn, blueBoxYn, cameraYn) \n
+                                      * 해당 내용은 soService에만 적용된다. "
+          required: false
+          type: string
+          default: "카플렛CS"
+        - name: body
+          in: body
+          description: 수정할 정보
+          required: true
+          schema:
+            $ref: "#/definitions/ServiceOperator"
+      description: "so 일부수정"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  #    put:
+  #      tags:
+  #        - "so-system"
+  #      summary: SO system 수정
+  #      parameters:
+  #        - name: soSystemId
+  #          in: query
+  #          required: true
+  #          type: string
+  #          default: "b47ad2775aad4c01902954e838efa461"
+  #        - name: body
+  #          in: body
+  #          description: so
+  #          required: true
+  #          schema:
+  #            $ref: "#/definitions/SoSystem"
+  #      description: SO system 수정
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  #    delete:
+  #      tags:
+  #        - "so-system"
+  #      summary: SO system 삭제
+  #      parameters:
+  #        - name: soSystemId
+  #          in: query
+  #          type: string
+  #          description: 삭제할 SO system 아이디(쉼표로 여러아이디 구별)
+  #          required: true
+  #          default: "b47ad2775aad4c01902954e838efa461"
+  #      description: "SO system 삭제"
+  #      responses:
+  #        200:
+  #          description: "successful operation"
+  #          schema:
+  #            $ref: "#"
+  #        400:
+  #          description: "Invalid status value"
+  #        404:
+  #          description: "Not Found"
+  #        500:
+  #          description: "Internal Server Error"
+  /terms:
+    get:
+      tags:
+        - "term"
+      summary: 전체약관리스트
+      parameters:
+        - name: size
+          in: query
+          description: 한 페이지를 구성하는 값 개수
+          required: true
+          type: string
+          default: "10"
+        - name: page
+          in: query
+          description: 페이지 번호
+          required: true
+          type: string
+          default: "1"
+        - name: termType
+          in: query
+          description: 약관타입 (회원가입, 탈퇴 등)
+          required: false
+          type: string
+          default: "회원가입"
+
+        - name: isSupplierId
+          description: "제휴사 약관 (true면 제휴사 약관만, false면 제휴사 아닌 약관만, 빈값일 경우 전체 반환)"
+          in: query
+          required: false
+          type: string
+          default: false
+        - name: supplierId
+          in: query
+          description: 제휴사 아이디
+          required: false
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+
+      description: ""
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /term:
+    post:
+      tags:
+        - "term"
+      summary: 약관 등록
+      parameters:
+        - name: body
+          in: body
+          description: SO system
+          required: true
+          schema:
+            $ref: "#/definitions/term"
+      description: 약관 등록
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    delete:
+      tags:
+        - "term"
+      summary: 약관 삭제
+      parameters:
+        - name: id
+          in: query
+          required: true
+          type: string
+          default: "308607058e014f75be4dff54b93a995b"
+        - name: version
+          type: string
+          in: query
+          description: 약관 버전
+          required: true
+          default: "1.0"
+      description: 약관 삭제
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseTerm"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    get:
+      tags:
+        - "term"
+      summary: 약관 상세보기
+      parameters:
+        - name: id
+          type: string
+          in: query
+          description: 약관 id
+          required: true
+          default: "308607058e014f75be4dff54b93a995b"
+        - name: version
+          type: string
+          in: query
+          description: "약관 버전 (빈 값일 경우, 가장최신버전 반환)"
+          required: true
+          default: "1.0"
+      description: " "
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    put:
+      tags:
+        - "term"
+      summary: 약관 수정
+      parameters:
+        - name: id
+          in: query
+          required: true
+          type: string
+          default: "308607058e014f75be4dff54b93a995b"
+        - name: termVerFlag
+          in: query
+          required: true
+          type: boolean
+          default: "true"
+          description: "true면 상위버전으로만 생성가능 , false면 원하는 버전 update (이전 버전 가능)\n
+          false 일 경우 termVer 입력필수"
+        - name: body
+          in: body
+          description: so
+          required: true
+          schema:
+            $ref: "#/definitions/term"
+      description: 약관 수정
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /term/recent:
+    post:
+      tags:
+        - "term"
+      summary: 최근 약관 반환
+      parameters:
+        - name: body
+          in: body
+          description: term
+          required: true
+          schema:
+            $ref: "#/definitions/termRecent"
+      description: 최근 약관 반환
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /search-address/ko:
+    get:
+      tags:
+        - "address"
+      summary: 한국 주소 검색
+      parameters:
+        - name: keyword
+          in: query
+          description: 검색할 주소 (시,군,구 보다 작은 단위)
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: 페이지 넘버 (1부터 시작)
+          required: false
+          type: number
+        - name: size
+          in: query
+          description: 출력할 결과 수 (도로명 주소 api 지원 최대 리밋 수 = 100)
+          required: false
+          type: number
+      description: 한국 주소 검색 - 도로명 주소, 지번 주소, ZipCode 를 반환 한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/address"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /search-address/ko/detail:
+    get:
+      tags:
+        - "address"
+      summary: 한국 주소 검색 상세
+      parameters:
+        - name: keyword
+          in: query
+          description: 검색할 주소 (시,군,구 보다 작은 단위)
+          required: true
+          type: string
+        - name: page
+          in: query
+          description: 페이지 넘버 (1부터 시작)
+          required: false
+          type: number
+        - name: size
+          in: query
+          description: 출력할 결과 수 (도로명 주소 api 지원 최대 리밋 수 = 100)
+          required: false
+          type: number
+      description: 한국 주소 검색 - 도로명 주소, 지번 주소, ZipCode  를 반환 한다.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/addressdetail"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /search-address-coord/ko:
+    get:
+      tags:
+        - "address"
+      summary: 주소 -> 위경도
+      parameters:
+        - name: address
+          in: query
+          description: 검색할 주소 (시,군,구 보다 작은 단위)
+          required: true
+          type: string
+      description: 주소  -> 위경도.
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/coordResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /search-address/poi:
+    get:
+      tags:
+        - "address"
+      summary: Point of interest 검색 후 전체주소와 위경도 반환
+      parameters:
+        - name: keyword
+          in: query
+          description: "주소 검색 키워드 POI. 디폴트 서울. (e.g. 서울역, 알티캐스트, 서초구파크빌딩 .. )"
+          required: false
+          type: string
+          default: "알티캐스트"
+        - name: lang
+          in: query
+          description: 언어 (디폴트 한국어 ko)
+          required: false
+          type: string
+        - name: region
+          in: query
+          description: 지역 (디폴트 한국 kr)
+          required: false
+          type: string
+      description: "구글맵 사용 api로 region을 정하지 않을경우 세계지역에 대해 검색하여 결과가 부정확함.
+                    구글맵 검색리스트에서 가장 첫번째 결과값만 리턴함."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/poiResponse"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+
+  /holidays:
+    get:
+      tags:
+        - "holiday"
+      summary: 휴일 검색
+      parameters:
+        - name: year
+          in: query
+          description: "년도"
+          type: integer
+        - name: month
+          in: query
+          description: "월"
+          type: integer
+        - name: startDt
+          description: "검색 시작 일시(UTC epoch seconds)"
+          in: query
+          type: integer
+        - name: endDt
+          description: "검색 종료 일시(UTC epoch seconds)"
+          in: query
+          type: integer
+        - name: groupId
+          description: "고객사 아이디"
+          in: query
+          type: string
+        - name: offset
+          description: "검색시작 인덱스넘버"
+          in: query
+          type: integer
+        - name: limit
+          description: "조회목록 제한수"
+          in: query
+          type: integer
+        - name: orderBy
+          description: "정렬기준 (예 필드명:1|필드명2:-1 필드명으로오름차순, 필드명2로 내림차순정렬)"
+          in: query
+          type: string
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/resHolidays"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /holiday:
+    post:
+      tags:
+        - "holiday"
+      summary: 휴일 입력
+      parameters:
+        - name: holiday
+          description: "휴일 정보"
+          in: body
+          schema:
+            $ref: "#/definitions/reqHolidays"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/resInt"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /holiday/{holidayId}:
+    delete:
+      tags:
+        - "holiday"
+      summary: 휴일 삭제
+      parameters:
+        - name: holidayId
+          description: "휴일 아이디"
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/resInt"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+  /holidaysJob:
+    post:
+      tags:
+        - "holiday"
+      summary: 휴일 배치 입력
+      parameters:
+        - name: holiday
+          description: "휴일 정보"
+          in: body
+          schema:
+            $ref: "#/definitions/reqBatchHoliday"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/resInt"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /reports:
+    get:
+      tags:
+        - "report"
+      summary: "리포트 전체조회"
+      parameters:
+        - name: paging
+          description: "페이지네이션 여부 (true: 페이징함, false: 페이징없이 전체반환)"
+          in: query
+          required: true
+          type: boolean
+          default: false
+        - name: page
+          description: "페이징 여부 true 일때, 페이지 인덱스 0 부터 시작"
+          in: query
+          required: false
+          type: integer
+          default: 0
+        - name: size
+          description: "한페이지에 보여줄 데이터 개수 (기본 10)"
+          in: query
+          type: integer
+          required: false
+          default: 10
+        - name: sort
+          description: "정렬 필드 (미입력시 initDate로 적용됨)"
+          in: query
+          type: string
+          required: false
+        - name: order
+          description: "정렬 방식 (desc, asc) 미입력시 desc 적용됨"
+          in: query
+          type: string
+          required: false
+        - name: reportType
+          description: "리포트 타입 (이상신고, 분실습득물, 사고사진, 주차사진, 차량상태사진, 연료량) 없으면 전체조회"
+          type: string
+          in: query
+          required: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/reportResponse"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /report/types:
+    get:
+      tags:
+        - "report"
+      summary: "리포트 타입 distinct 조회"
+      description: "리포트 타입의 종류를 리스트로 반환한다."
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/reportTypes"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /report:
+    get:
+      tags:
+        - "report"
+      summary: "리포트 아이디로 단일조회"
+      parameters:
+        - name: id
+          description: "리포트 아이디"
+          in: query
+          required: true
+          type: string
+          default: false
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/reportResponse"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    post:
+      tags:
+        - "report"
+      summary: "리포트 등록"
+      parameters:
+        - name: report
+          description: "리포트"
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/report"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/reportResponse"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    patch:
+      tags:
+        - "report"
+      summary: "리포트 수정"
+      description: "수정 가능 항목 (reportType, title, content, imgs, objectUuid)"
+      parameters:
+        - name: id
+          description: "리포트 아이디"
+          in: query
+          required: true
+          type: string
+          default: "5b69378e5"
+        - name: report
+          description: "리포트"
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/report"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/reportResponse"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    delete:
+      tags:
+        - "report"
+      summary: "리포트 삭제"
+      description: "아이디로 삭제. 여러 리포트는 콤마 (,)로 구분 (5b69378e5,a0db7541b)"
+      parameters:
+        - name: id
+          description: "리포트 아이디"
+          in: query
+          required: true
+          type: string
+          default: "5b69378e5"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/reportResponse"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /distributionChannels:
+    get:
+      tags:
+        - "distribution-channel"
+      summary: "유통채널 전체조회"
+      description: "유통채널 전체조회"
+      parameters:
+        - name: size
+          in: query
+          description: "반환받을 데이터 개수"
+          required: false
+          type: number
+          default: 10
+        - name: page
+          in: query
+          description: "반환받을 페이지 번호. 0부터 시작"
+          required: false
+          type: number
+          default: 0
+        - name: q
+          in: query
+          description: "검색할 데이터들을 입력한다. 문자열은 일부만 일치해도 반환(regex), bool, int 등의 값은 완전 일치해야 반환한다."
+          required: false
+          type: string
+          default: "channelName=LG유플러스,address=서초구"
+        - name: startTime
+          in: query
+          description: "initDate를 기준으로 기간을 조회할 수 있다. 기간의 시작 시간 (epoch time (second))"
+          required: false
+          type: number
+          default: 0
+        - name: endTime
+          in: query
+          description: "initDate를 기준으로 기간을 조회할 수 있다. 기간의 시작 시간 (epoch time (second))"
+          required: false
+          type: number
+          default: 4103691203000
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/distributionChannel"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    post:
+      tags:
+        - "distribution-channel"
+      summary: "유통채널 등록"
+      description: "유통채널 등록"
+      parameters:
+        - name: "distributionChannel"
+          in: body
+          description: ""
+          required: true
+          schema:
+            $ref: "#/definitions/distributionChannel"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/distributionChannel"
+
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /distributionChannels/{distributionChannelId}:
+    get:
+      tags:
+        - "distribution-channel"
+      summary: "유통채널 상세조회"
+      description: "유통채널 상세조회"
+      parameters:
+        - name: "distributionChannelId"
+          in: path
+          description: ""
+          required: true
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/distributionChannel"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    patch:
+      tags:
+        - "distribution-channel"
+      summary: "유통채널 수정"
+      description: "유통채널 수정"
+      parameters:
+        - name: "distributionChannelId"
+          in: path
+          description: ""
+          required: true
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+        - name: "distributionChannel"
+          in: body
+          description: ""
+          required: true
+          schema:
+            $ref: "#/definitions/distributionChannel"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/distributionChannel"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+    delete:
+      tags:
+        - "distribution-channel"
+      summary: "유통채널 삭제"
+      description: "유통채널 삭제"
+      parameters:
+        - name: "distributionChannelId"
+          in: path
+          description: ""
+          required: true
+          type: string
+          default: "6ab04b6a94994b9b981a914f51f2830e"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/responseDeleteResult"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+  /distributionChannel/name/check:
+    get:
+      tags:
+        - "distribution-channel"
+      summary: "유통 채널명 중복체크"
+      description: "유통채널 제휴사이름 중복체크"
+      parameters:
+        - name: channelName
+          in: query
+          description: "중복체크할 제휴사의 이름"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "successful operation"
+        400:
+          description: "Invalid status value"
+        404:
+          description: "Not Found"
+        500:
+          description: "Internal Server Error"
+
+
+
+
+######################################################################################
+definitions:
+  supplierRes:
+    required:
+      - code
+      - message
+      - result
+    properties:
+      code:
+        type: number
+        description: "응답 코드"
+      message:
+        type: string
+        description: "응답 메세지"
+      result:
+        type: object
+        $ref: "#/definitions/supplier"
+
+  supplier:
+    required:
+      - supplierName
+      - type
+    properties:
+      supplierName:
+        type: string
+        description: "오브젝트 공급자명(법인명, 렌터카업체명, 개인사업자명)"
+      type:
+        type: number
+        description: "공급자 타입 (0: 미정의, 1: CSO(Car Sharing Operator), 2: 렌터카업체, 3: 고객사 4: 운송사업자)"
+      objectType:
+        type: number
+        description: "공급 오브젝트 타입(object-service의 object도메인의 objectType과 같음. 차량은 1) "
+      contract:
+        type: array
+        description: "계약서"
+        items:
+          type: object
+          $ref: "#/definitions/contract"
+      representativeName:
+        description: "대표자명"
+        type: string
+      representativeTel:
+        description: "제공업체의 대표번호. 국제표준 E.123을 따른다.  +로 시작하고 공백으로 나눴을때 4개의 블럭을 가진다. 예시 ) +22 607 123 4567"
+        type: string
+      extensionNumber:
+        description: "제공업체 사내번호"
+        type: string
+      taxPayerId:
+        description: "사업자: 사업자등록번호"
+        type: string
+      address:
+        description: "주소"
+        type: string
+      supplierImg:
+        description: "공급자 이미지"
+        type: array
+        items:
+          type: string
+      memo:
+        description: "메모"
+        type: string
+      supervisor:
+        description: "Service Operator 담당자 Uuid"
+        type: string
+      supplierId:
+        description: "공급자 아이디"
+        type: string
+      carNumber:
+        description: "제공 차량 수 (object-service)"
+        type: number
+      initDate:
+        description: "등록일"
+        type: number
+      modifiedDate:
+        description: "수정일"
+        type: number
+      certificateImg:
+        description: "사업자 등록증 이미지"
+        type: string
+      businessHours:
+        description: "근무시간. (0900|1800)"
+        type: string
+      isCertificated:
+        description: "인증 여부"
+        type: boolean
+      certificationType:
+        description: "인증 방식"
+        type: string
+      emailDomain:
+        description: "제휴사의 이메일 도메인. @이하의 주소 "
+        type: string
+      bankName:
+        description: "은행명"
+        type: string
+      bankAccountNumber:
+        description: "제휴사 계좌번호"
+        type: string
+      accountHolderName:
+        description: "계좌 소유자 이름"
+        type: string
+      routingNumber:
+        description: "라우팅넘버"
+        type: string
+      deleteFlag:
+        description: "제휴사 삭제 여부"
+        type: boolean
+      contacts:
+        description: "연락처 목록(화면이나 실사용자에게 보여지는 연락처)"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/contact"
+      registrationNumber:
+        type: string
+        description: "법인등록번호 / 주민등록번호"
+      sellersPermit:
+        type: string
+        description: "통신판매업신고번호"
+      businessLicense:
+        type: string
+        description: "렌터카 업체 등록번호"
+      representativeEmail:
+        type: string
+        description: "대표자 이메일"
+      detailAddress:
+        type: string
+        description: "상세주소"
+      financeManager:
+        type: string
+        description: "제휴사 내부 세금계산서를 수령할 담당자의 이름"
+      financeManagerPhone:
+        type: string
+        description: "제휴사 내부 세금계산서를 수령할 담당자의 연락처"
+      financeManagerEmail:
+        type: string
+        description: "제휴사 내부 세금계산서를 수령할 담당자의 이메일"
+      externalIds:
+        type: object
+        description: "외부 연동 명:아이디로 구성(map) \n
+                       nicepay-submall : ${ID} \n
+                       barobill : ${ID} "
+      postalCode:
+        type: string
+        description: "우편코드"
+      operationType:
+        type: number
+        description: "운영타입  \n
+                      0:owned(직영 본점), 1:subsidiary(직영 지점), 2:franchisee(가맹점), 3:partnership(파트너사)"
+    example:
+      supplierName: "supplier1"
+      type: 1
+      objectType: 1
+      contract: [{"startDate": 1586329386,
+                  "endDate": 1588921386,
+                  "contractId": 1586329386,
+                  "initDate": 1586329454,
+                  "modifiedDate": 0,
+                  "contractImg": "/contract01.jpg",
+                  "useStatus": true,
+                  "type": "무료",
+                  "memo": "비고",
+                  "items": {
+                    "주차면 수": 3
+                  },
+                  "amount": 10000000,
+                  "billingType": true,
+                  "basicPlan": {
+                    "timeUnit": "10",
+                    "amount": 1000,
+                    "description": "10분당 1000원 과금"
+                  },
+                  "additionalPlan": {
+                    "timeUnit": "10",
+                    "amount": 1000,
+                    "description": "10분당 1000원 과금"
+                  },
+                  "planPerDay": 10000,
+                  "freePlan": {
+                    "timeUnit": "10",
+                    "amount": 1000,
+                    "description": "10분당 1000원 과금"
+                  },
+                  "deleteFlag": false }]
+      representativeName: "홍길동"
+      representativeTel: "+22 607 123 4567"
+      taxPayerId: "111111"
+      address: "서초구 파크빌딩"
+      supplierImg: ["img/01.jpg"]
+      memo: "description"
+      supervisor: "memberUuid"
+      certificateImg: "img/02.jpg"
+      businessHours: "0900|1800"
+      isCertificated: true
+      certificationType: "email"
+      emailDomain: "alticast.com"
+      bankName: "우리은행"
+      bankAccountNumber: "1111-111-111111"
+      accountHolderName: "김태훈"
+      deleteFlag: false
+      contacts: [{
+        "contactType": "사고대응",
+        "email": "alti@alti.com",
+        "contactNo": ["+22 607 123 4567"]}]
+      registrationNumber: "123-1123-1234"
+      sellersPermit: "123-1123-1234"
+      businessLicense: "123-1123-1234"
+
+  contract-list:
+    type: array
+    items:
+      type: object
+      $ref: "#/definitions/contract"
+
+  contract:
+    required:
+      - startDate
+      - endDate
+    properties:
+      startDate:
+        type: number
+        description: "계약 시작일"
+      endDate:
+        type: number
+        description: "계약 종료일"
+      contractId:
+        type: string
+        description: "계약 key"
+      initDate:
+        type: number
+        description: "등록일"
+      modifiedDate:
+        type: number
+        description: "수정일"
+      contractImg:
+        type: string
+        description: "계약서 파일 경로"
+      useStatus:
+        type: boolean
+        description: "사용여부(계약 종료후 false)"
+      type:
+        type: string
+        description: "계약서 유형. 무료계약, 유료계약, 건별 실비 정산 등"
+      memo:
+        type: string
+        description: "비고. 기타사항 메모"
+      items:
+        type: object
+        description: "계약 내용. 사용자가 임의로 넣는다. 예를 들어서 계약 주차면수:3"
+      amount:
+        type: number
+        description: "계약 금액"
+      billingType:
+        type: string
+        description: "과금 형태. true:유료, false 무료"
+      basicPlan:
+        type: object
+        description: "기본 과금 형태. 예를 들어서 10분에 1000원 과금"
+        $ref: "#/definitions/plan"
+      additionalPlan:
+        type: object
+        description: "추가 과금 형태. 예를 들어서 10분에 1000원 과금"
+        $ref: "#/definitions/plan"
+      planPerDay:
+        type: number
+        description: "일일 요금"
+      freePlan:
+        type: object
+        description: "무료 주차 과금 형태. 예를 들어서 timeUnit은 10, amount=0이면 10분은 무료를 의미한다."
+        $ref: "#/definitions/plan"
+      deleteFlag:
+        type: boolean
+        description: "삭제 여부"
+    example:
+      startDate: 1586329386
+      endDate: 1588921386
+      contractId: 1586329386
+      initDate: 1586329454
+      modifiedDate: 0
+      contractImg: "/contract01.jpg"
+      useStatus: true
+      type: "무료"
+      memo: "비고"
+      items: {"주차면 수":3}
+      amount: 10000000
+      billingType: true
+      basicPlan:
+        $ref: "#/definitions/plan/example"
+      additionalPlan:
+        $ref: "#/definitions/plan/example"
+      planPerDay: 10000
+      freePlan:
+        $ref: "#/definitions/plan/example"
+      deleteFlag: false
+
+  plan:
+    properties:
+      timeUnit:
+        type: string
+        description: "요금제의 시간단위. 예를 들어서 10분 당 1000원 이라면, 10 혹은 10분이 들어간다."
+      amount:
+        type: number
+        description: "요금제의 금액. 예를 들어서 10분 당 1000원 이라면 1000이 들어간다."
+      description:
+        type: string
+        description: "요금제에 대한 설명"
+    example:
+      timeUnit: "10"
+      amount: 1000
+      description: "10분당 1000원 과금"
+
+  contact:
+    properties:
+      contactType:
+        type: string
+        description: "예약문의, 사고 대응 등등"
+      email:
+        type: string
+        description: "이메일"
+      contactNo:
+        type: array
+        items:
+          type: string
+        description: "전화번호인데 번호가 많은 경우 (예를 들어서 2007-0000~0003 이렇게 써져있는 회사들 참조.) 국제표준 E.123을 따른다.  +로 시작하고 공백으로 나눴을때 4개의 블럭을 가진다. 예시 ) +22 607 123 4567"
+
+  code:
+    required:
+      - code
+      - codeName
+    properties:
+      code:
+        type: string
+        description: "코드"
+      codeName:
+        type: string
+        description: "코드명"
+      note:
+        type: string
+        description: "메모"
+      initDate:
+        type: number
+        description: "등록일"
+      regId:
+        type: string
+        description: "등록인 아이디"
+      modiId:
+        type: string
+        description: "수정인 아이디"
+      modifiedDate:
+        type: number
+        description: "수정일"
+      subCodeList:
+        description: "하위 코드리스트 "
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/subCode"
+    example:
+      code: "TOYOTA"
+      codeName: "토요타_모델리스트"
+      note: ""
+      regId: "alti"
+      modiId: "alti"
+      modifiedDate: 1580492747
+      subCodeList: [{subCode: "1",
+                     subCodeName: "렉서스",
+                     subCodeNote: "",
+                     subCodeId: "",
+                     subCodeInitDate: 1580492747,
+                     subCodeRegId: "alti",
+                     subCodeModiId: "alti",
+                     subCodeModifiedDate: 0}]
+  subCode:
+    required:
+      - subCode
+      - subCodeName
+    properties:
+      subCodeNote:
+        description: "하위코드 메모"
+        type: string
+      subCodeId:
+        description: "하위코드"
+        type: string
+      subCodeInitDate:
+        description: "하위코드 등록일"
+        type: number
+      subCodeRegId:
+        description: "등록인"
+        type: string
+      subCodeModiId:
+        description: "수정인"
+        type: string
+      subCodeModifiedDate:
+        description: "수정일"
+        type: number
+    example:
+      subCode: "1"
+      subCodeName: "렉서스"
+      subCodeNote: ""
+      subCodeId: ""
+      subCodeInitDate: 1580492747
+      subCodeRegId: "alti"
+      subCodeModiId: "alti"
+      subCodeModifiedDate: 0
+
+  codePost:
+    required:
+      - code
+      - codeName
+    properties:
+      codeId:
+        type: string
+      code:
+        type: string
+      codeName:
+        type: string
+      note:
+        type: string
+      initDate:
+        type: number
+      regId:
+        type: string
+      modiId:
+        type: string
+      modifiedDate:
+        type: number
+      subCodeList:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/subCode"
+    example:
+      codeId: "d6a1068b1251453cbf985c4e624562f0"
+      code: "TOYOTA"
+      codeName: "토요타_모델리스트"
+      note: ""
+      regId: "alti"
+      modiId: "alti"
+      modifiedDate: 1580492747
+      subCodeList: [{subCode: "1",
+                     subCodeName: "렉서스",
+                     subCodeNote: "",
+                     subCodeId: "",
+                     subCodeInitDate: 1580492747,
+                     subCodeRegId: "alti",
+                     subCodeModiId: "alti",
+                     subCodeModifiedDate: 0}]
+
+  withdraw:
+    required:
+      - content
+      - memberId
+    properties:
+      content:
+        type: string
+        description: "탈퇴 사유 "
+      memberId:
+        type: string
+        description: "사용자 아이디"
+      withdrawId:
+        type: string
+        description: "withdraw key"
+      initDate:
+        type: number
+        description: "등록일"
+    example:
+      content: "탈퇴합니다"
+      memberId: "ks.ko@alticast.com"
+      withdrawId: "1580472747"
+      initDate: 1580472747000
+
+  withdrawPost:
+    required:
+      - content
+      - memberId
+    properties:
+      content:
+        type: string
+      memberId:
+        type: string
+    example:
+      content: "탈퇴합니다"
+      memberId: "ks.ko@alticast.com"
+
+  voc:
+    required:
+      - memberId
+      - content
+      - bookingId
+    properties:
+      content:
+        type: string
+        description: "voc 내용"
+      memberId:
+        type: string
+        description: "작성자 아이디"
+      title:
+        type: string
+        description: "제목"
+      bookingId:
+        type: string
+        description: "작성자가 이용한 예약 아이디 "
+      externalImgs:
+        type: array
+        items:
+          type: string
+        description: "외관 이미지 경로들"
+      internalImgs:
+        type: array
+        items:
+          type: string
+        description: "내관 이미지 경로들"
+    example:
+      content: "차에서 담배냄새가 나요"
+      memberId: "ks.ko@alticast.com"
+      title: "담배냄새..."
+      bookingId: "201911081942000"
+
+  review:
+    required:
+      - memberId
+      - score
+      - content
+      - bookingId
+    properties:
+      content:
+        type: string
+        description: "리뷰 내용"
+      memberId:
+        type: string
+        description: "작성자 아이디"
+      score:
+        type: number
+        description: "별점"
+      objectUuid:
+        type: string
+        description: "리뷰를 남길 차량 아이디(vin. objectUuid)"
+      bookingId:
+        type: string
+        description: "사용자가 이용한 예약 아이디"
+      supplierId:
+        type: string
+        description: "제휴사 아이디"
+      supplierName:
+        type: string
+        description: "제휴사 이름"
+      regMemberId:
+        type: string
+        description: "사용자 아이디(userId)"
+      reviewId:
+        type: string
+        description: "review key"
+      modifiedDate:
+        type: number
+        description: "수정일"
+      initDate:
+        type: number
+        description: "등록일"
+    example:
+      content: "차에서 담배냄새가 나요"
+      memberId: "ks.ko@alticast.com"
+      score: 3
+      bookingId: "201911081942000"
+      regMemberId: "user01"
+      reviewId: "asdf1580961350"
+      objectUuid: "MMHEM42APXA123456"
+      supplierId: "6ab04b6a94994b9b981a914f51f2830e"
+      supplierName: "supplier1"
+      initDate: 1580961350744
+      modifiedDate: 0
+
+  reviewPost:
+    required:
+      - memberId
+      - score
+      - content
+      - bookingId
+      - objectUuid
+    properties:
+      content:
+        type: string
+      memberId:
+        type: string
+      regMemberId:
+        type: string
+      score:
+        type: number
+      bookingId:
+        type: string
+      objectUuid:
+        type: string
+    example:
+      content: "차에서 담배냄새가 나요"
+      memberId: "ks.ko@alticast.com"
+      regMemberId: "user01"
+      score: 3
+      bookingId: "201911081942000"
+      objectUuid: "MMHEM42APXA123456"
+
+  memberLabel:
+    required:
+      - name
+      - type
+      - description
+      - useStatus
+    properties:
+      name:
+        type: string
+        description: "멤버등급명"
+      type:
+        type: string
+        description: "등급타입 (Service Operator별 등급 지정 방식이 다를 수 있음)"
+      description:
+        type: string
+        description: "설명"
+      useStatus:
+        type: boolean
+        description: "사용여부"
+      labelId:
+        type: string
+        description: "등급 key"
+      modifiedDate:
+        type: number
+        description: "수정일"
+      initDate:
+        type: number
+        description: "등록일"
+    example:
+      labelId: "1580437693"
+      name: "GOLD"
+      type: "grade"
+      useStatus: true
+      description: "사용 5회 이상 회원"
+      initializedDate: 1580437693000
+
+  memberLabelPost:
+    required:
+      - name
+      - description
+      - useStatus
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      useStatus:
+        type: boolean
+    example:
+      name: "GOLD"
+      useStatus: true
+      description: "사용 5회 이상 회원"
+
+  faq:
+    required:
+      - title
+      - content
+      - category
+      - regId
+      - useStatus
+      - topStatus
+    properties:
+      title:
+        type: string
+        description: "faq 제목"
+      content:
+        type: string
+        description: "faq 내용"
+      regId:
+        type: string
+        description: "등록인 아이디"
+      useStatus:
+        type: boolean
+        description: "사용여부"
+      topStatus:
+        type: boolean
+        description: "사용자 app 메인 표현여부"
+      category:
+        type: string
+        description: "카테고리 타입"
+      faqId:
+        type: string
+        description: "faq key"
+      initDate:
+        type: number
+        description: "등록일"
+    example:
+      title: "최소 예약 시간과 최대 예약 시간은 얼마인가요?"
+      content: "오토라이드 카셰어링의 최소 예약 시간은 30분이며, 최대 30일까지 예약이 가능합니다."
+      regId: "userId"
+      useStatus: true
+      topStatus: false
+      faqId: "userId1580972650"
+      initDate: 1580972650426
+      category: "예약/결제/반납"
+
+  faqPost:
+    required:
+      - title
+      - content
+      - category
+      - regId
+      - useStatus
+      - topStatus
+    properties:
+      title:
+        type: string
+      content:
+        type: string
+      regId:
+        type: string
+      useStatus:
+        type: boolean
+      topStatus:
+        type: boolean
+      category:
+        type: string
+    example:
+      title: "최소 예약 시간과 최대 예약 시간은 얼마인가요?"
+      content: "오토라이드 카셰어링의 최소 예약 시간은 30분이며, 최대 30일까지 예약이 가능합니다."
+      regId: "userId"
+      useStatus: true
+      topStatus: false
+      category: "예약/결제/반납"
+
+  #  corp-contract:
+  #    required:
+  #      - positionId
+  #      - groupId
+  #      - startDate
+  #      - endDate
+  #    properties:
+  #      positionId:
+  #        type: string
+  #        description: "법인 위치아이디"
+  #      groupId:
+  #        type: string
+  #      startDate:
+  #        type: number
+  #        description: "계약 시작일"
+  #      endDate:
+  #        type: number
+  #        description: "계약 종료일"
+  #      corpContractId:
+  #        type: string
+  #        description: "corpContract key"
+  #      initDate:
+  #        type: string
+  #        description: "등록일"
+  #      fileName:
+  #        type: string
+  #        description: "계약서 파일명"
+  #      useStatus:
+  #        type: boolean
+  #        description: "사용여부"
+  #    example:
+  #      positionId: "아주렌터카A"
+  #      groupId: "d194efbd6397484c92f1d9f464c376a8"
+  #      startDate: 1577836801000
+  #      endDate: 1577836801000
+  #  corp-contractPut:
+  #    required:
+  #      - positionId
+  #      - groupId
+  #      - startDate
+  #      - endDate
+  #    properties:
+  #      positionId:
+  #        type: string
+  #      groupId:
+  #        type: string
+  #        description: "법인 아이디"
+  #      startDate:
+  #        type: number
+  #        description: "계약 시작일"
+  #      endDate:
+  #        type: number
+  #        description: "계약 종료일"
+  #      corpContractId:
+  #        type: string
+  #        description: "corpContract key"
+  #      initDate:
+  #        type: string
+  #        description: "등록일"
+  #      fileName:
+  #        type: string
+  #        description: "계약서 파일명"
+  #      useStatus:
+  #        type: boolean
+  #        description: "사용여부"
+  #    example:
+  #      corpContractId: "1581413021"
+  #      positionId: "아주렌터카A"
+  #      groupId: "d194efbd6397484c92f1d9f464c376a8"
+  #      startDate: 1577836801000
+  #      endDate: 1577836801000
+
+  corp-lease:
+    required:
+      - corpContractId
+      - objectUuid
+      - startDate
+      - endDate
+    properties:
+      corpContractId:
+        description: "법인 계약 아이디"
+        type: string
+      objectUuid:
+        type: string
+        description: "오브젝트 아이디(차량의 경우 VIN)"
+      startDate:
+        type: number
+        description: "계약 시작일"
+      endDate:
+        type: number
+        description: "계약 종료일"
+      corpLeaseId:
+        type: string
+        description: "corpLease key"
+      beginMileage:
+        type: number
+        description: "시작 km 수"
+      endMileage:
+        type: number
+        description: "종료 km 수"
+      initDate:
+        type: number
+        description: "등록일"
+      beginImageName:
+        type: string
+        description: "시작 차량사진"
+      endImageName:
+        type: string
+        description: "종료 차량사진"
+      beginFuel:
+        type: number
+        description: "관리 시작 연료량"
+      endFuel:
+        type: number
+        description: "관리 종료 연료량"
+    example:
+      corpContractId: "1580808310"
+      objectUuid: "KMHEM42APXA123458"
+      startDate: 1577836802000
+      endDate: 1580860801000
+      corpLeaseId: "1580812534"
+      beginMileage: 0
+      endMileage: 200000
+      initDate: 1580812534970
+      beginImageName: "/corp-lease/0001_start.jpg"
+      endImageName: "/corp-lease/0001_end.jpg"
+      beginFuel: 0
+      endFuel: 0
+
+  inquire:
+    required:
+      - regId
+      - category
+      - title
+      - content
+      - fileNames
+      - isLock
+      - lockPw
+    properties:
+      regId:
+        type: string
+        description: "등록인 아이디"
+      category:
+        type: string
+        description: "1:1문의 카테고리"
+      title:
+        type: string
+        description: "제목"
+      content:
+        type: string
+        description: "내용"
+      fileNames:
+        type: string
+        description: "첨부파일 경로"
+      isLock:
+        type: boolean
+        description: "비밀글 여부"
+      lockPw:
+        type: string
+        description: "비밀번호"
+      inquireId:
+        type: string
+        description: "1:1문의 key"
+      initDate:
+        type: number
+        description: "등록일"
+      modifedDate:
+        type: number
+        description: "수정일"
+      groupInfo:
+        description: "등록자가 속한 그룹정보"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/groupInfo"
+      status:
+        type: boolean
+        description: "답변완료 여부 (true: 답변완료, false: 답볍대기)"
+      writeStatus:
+        type: boolean
+        description: "답변 작성 중 문의 삭제하지 않도록 검증하는 플래그"
+      deleteFlag:
+        type: boolean
+        description: "삭제 플래그(true:삭제)"
+      answer:
+        description: "답변"
+        type: object
+        $ref: "#/definitions/answerInfo"
+    example:
+      regId: "brsong"
+      category: "문의"
+      title: "사용방법문의"
+      content: "사용방법 문의합니다."
+      fileNames: ["/alti/01.img"]
+      isLock: false
+      lockPw: ""
+      initDate: 1580860801000
+      modifedDate: 1580860802000
+
+  answerInfo:
+    required:
+      - answerId
+      - answerContent
+    properties:
+      answerId:
+        type: string
+        description: "답변자 아이디"
+      answerContent:
+        type: string
+        description: "답변내용"
+      answerName:
+        type: string
+        description: "답변자 이름"
+      answerDate:
+        type: number
+        description: "답변 일시"
+      answerModifedDate:
+        type: number
+        description: "답변 수정일시"
+      modifiedAnswerId:
+        type: string
+        description: "답변 수정인 아이디"
+      modifiedAnswerName:
+        type: string
+        description: "답변 수정인 아이디"
+    example:
+      answerId: "admin"
+      answerContent: "반영하겠습니다."
+      answerName: "관리자"
+      answerDate: 1580860801000
+      answerModifedDate: 1580860801000
+
+  updateContent:
+    required:
+      - content
+    properties:
+      content:
+        type: string
+    example:
+      content: "업데이트할 탈퇴사유 내용"
+
+  answerInfoPost:
+    required:
+      - answerId
+      - answerContent
+    properties:
+      inquireId:
+        type: string
+      regId:
+        type: string
+      category:
+        type: string
+      title:
+        type: string
+      content:
+        type: string
+      answer:
+        type: object
+      answerId:
+        type: string
+      answerContent:
+        type: string
+      answerName:
+        type: string
+      answerDate:
+        type: number
+      answerModifedDate:
+        type: number
+      modifiedAnswerId:
+        type: string
+      modifiedAnswerName:
+        type: string
+    example:
+      inquireId: "1583718289"
+      regId: "brsong"
+      category: "문의"
+      title: "사용방법문의"
+      content: "사용방법 문의합니다."
+      answer: {"answerId": "admin",
+               "answerContent": "반영하겠습니다.",
+               "answerName": "관리자",
+               "answerDate": 1580860801000,
+               "answerModifedDate": 1580860801000}
+
+  groupInfo:
+    required:
+      - groupId
+      - type
+      - name
+    properties:
+      groupId:
+        type: string
+        description: "그룹 아이디"
+      type:
+        type: number
+        description: "그룹 타입"
+      name:
+        type: string
+        description: "그룹명"
+    example:
+      groupId: "alti"
+      type: 1
+      name: "brsong"
+
+  notice:
+    required:
+      - category
+      - exposureType
+      - selectedCorp
+      - exposureStartDate
+      - exposureEndDate
+      - exposureStartTime
+      - exposureEndTime
+      - title
+      - content
+      - filePath
+      - regId
+      - contactNo
+      - division
+    properties:
+      category:
+        type: string
+        description: "공지 카테고리 (공지, 이벤트..)"
+      exposureType:
+        type: string
+        description: "노출 타입 (전체, 법인)"
+      selectedCorp:
+        type: string
+        description: "노출타입 법인일시 선택된 법인"
+      exposureStartDate:
+        type: string
+        description: "노출 시작일"
+      exposureEndDate:
+        type: string
+        description: "노출 종료일"
+      exposureStartTime:
+        type: string
+        description: "노출 시작 시각"
+      exposureEndTime:
+        type: string
+        description: "노출 종료 시각"
+      title:
+        type: string
+        description: "제목"
+      content:
+        type: string
+        description: "내용"
+      filePath:
+        type: string
+        description: "파일 경로"
+      regId:
+        type: string
+        description: "등록인"
+      contactNo:
+        type: string
+        description: "연락처"
+      division:
+        type: string
+        description: "부서"
+    example:
+      category: "공지"
+      exposureType: "전체"
+      selectedCorp: ""
+      exposureStartDate: 0
+      exposureEndDate: 4105574483000
+      exposureStartTime: "09"
+      exposureEndTime: "23"
+      title: "두번째 공지입니다"
+      content: "공지내용."
+      filePath: "img/01/2020"
+      regId: "cuty"
+      contactNo: "02-1919-1010"
+      division: "HR"
+  popup:
+    required:
+      - exposureCondition
+      - exposureStartDate
+      - exposureEndDate
+      - status
+      - title
+      - size
+      - regId
+      - filePath
+    properties:
+      exposureCondition:
+        type: string
+        description: "노출조건"
+      exposureStartDate:
+        type: number
+        description: "노출시작일"
+      exposureEndDate:
+        type: number
+        description: "노출종료일"
+      status:
+        type: boolean
+        description: "노출여부"
+      title:
+        type: string
+        description: "제목"
+      size:
+        type: string
+        description: "노출사이즈(for front, 0:full, 1: half)"
+      regId:
+        type: string
+        description: "등록인"
+      filePath:
+        type: string
+        description: "파일경로"
+      popupId:
+        type: string
+        description: "popup key"
+      initDate:
+        type: number
+        description: "등록일"
+      modifedDate:
+        type: number
+        description: "수정일"
+    example:
+      exposureCondition: "다시 노출 안함"
+      title: "추천인 이벤트!"
+      regId: "ks.ko@alticast.com"
+      filePath: "/popup3.jpg"
+      popupId: "ks.ko@alticast.com1581329777"
+
+  ServiceOperator:
+    required:
+      - soInfo
+    properties:
+      soInfo:
+        description: "SO(Service Operator) 정보"
+        type: object
+        $ref: "#/definitions/SOInfo"
+      soUuid:
+        description: "SO uuid"
+        type: string
+      initDate:
+        description: "등록일"
+        type: number
+      modifiedDate:
+        description: "수정일"
+        type: number
+      deleteFlag:
+        description: "삭제플래그(true:삭제)"
+        type: boolean
+      terminalSupplier:
+        description: "차량 장치 제공사 목록"
+        type: array
+        items:
+          type: string
+      soServices:
+        description: "SO가 운영하는 서비스"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/SOService"
+    example:
+      soInfo:
+        $ref: "#/definitions/SOInfo/example"
+      soUuid: ""
+      soServices: [{
+        serviceNm: "카플렛CS",
+        serviceLogo: "1.img",
+        useStatus: true,
+        vehicleType: "01",
+        fuelType: "",
+        deviceType: "",
+        serviceAddress: "",
+        accidentPhoneNo: "",
+        serviceTime: "",
+        servicePhoneNo: "",
+        cancelPolicyKind: 2,
+        pointSaveKind: 1,
+        licenseWaitDay: 0,
+        timeZone: 540,
+        timeZoneUse: true,
+        iipmYn: true,
+        rfidYn: true,
+        touchPadYn: true,
+        aqsYn: true,
+        fobYn: true,
+        keyBoxYn: false,
+        blueBoxYn: true,
+        cameraYn: true,
+        reservUnit: "",
+        bookingPicYn: false,
+        clientSettings: {
+          "dashboardTabs": [
+            {
+              "tabName": "exampleTabName1",
+              "url": "www.xxx.com"
+            },
+            {
+              "tabName": "exampleTabName2",
+              "url": "www.xxx2.com"
+            }
+          ]
+        }
+      }]
+
+  SOInfo:
+    required:
+      - soNm
+      - ceoNm
+      - contractYn
+      - zoneId
+      - deleteFlag
+    properties:
+      soNm:
+        description: "SO(Service Operator) 이름"
+        type: string
+      ceoNm:
+        description: "대표자명"
+        type: string
+      soPhoneNo:
+        description: "전화번호"
+        type: string
+      contractYn:
+        description: "계약유무"
+        type: boolean
+      ctrdtStartDate:
+        description: "계약 시작일"
+        type: string
+      ctrdtEndDate:
+        description: "계약 종료일"
+        type: string
+      address:
+        description: "주소"
+        type: string
+      detailAddress:
+        description: "상세주소"
+        type: string
+      contractFileSeqNo:
+        description: "계약파일 일련번호"
+        type: number
+      settingCompYn:
+        description: "세팅완료 여부"
+        type: boolean
+      securityCode:
+        type: string
+        description: "Client security code"
+      clientId:
+        type: array
+        items:
+          type: string
+          description: "오토플러그 아이디"
+      authCode:
+        type: string
+        description: "인증 코드"
+      systemCode:
+        type: number
+        description: "시스템 코드"
+      pgCode:
+        type: string
+        description: "pg사 코드"
+      pgKey:
+        type: string
+        description: "pg 인증키"
+      pgAccount:
+        type: string
+        description: "pg 계정"
+      mapCode:
+        type: string
+        description: "지도 코드"
+      presetSeqNo:
+        type: number
+        description: "프리셋 일련번호"
+      raideaNm:
+        type: string
+        description: "SO를 관리하는 라이디어 담당자명"
+      imageFileSeqNo:
+        type: number
+        description: "이미지파일 일련번호"
+      zoneId:
+        type: string
+        description: "위치정보"
+      soUuid:
+        type: string
+        description: "SO uuid"
+      initDate:
+        type: string
+        description: "등록일"
+      modifiedDate:
+        type: string
+        description: "수정일"
+      deleteFlag:
+        type: boolean
+        description: "삭제 플래그(true:삭제)"
+      businessNumber:
+        type: string
+        description: "사업자번호"
+      financeManager:
+        type: string
+        description: "so회사의 재무담당자 이름"
+      barobillId:
+        type: string
+        description: "바로빌 아이디"
+      barobillPw:
+        type: string
+        description: "바로빌 비밀번호"
+      soEmail:
+        type: string
+        description: "이메일주소"
+      countryCode:
+        type: string
+        description: "국가코드"
+      nationalCountry:
+        type: array
+        items:
+          type: string
+          description: "내국인 지정 국가"
+      extSysApiKey:
+        type: string
+        description: "api key"
+      extSysUrl:
+        type: string
+        description: "endpoint url"
+      prepaidUseFlag:
+        type: string
+        description: "prepaid card 사용 여부"
+
+    example:
+      soNm: "오또라이드"
+      ceoNm: "오토라이드"
+      soPhoneNo: "1577-1577"
+      contractYn: true
+      ctrdtStartDate: 0
+      ctrdtEndDate: 0
+      address: ""
+      detailAddress: ""
+      contractFileSeqNo: 0
+      settingCompYn: true
+      securityCode: "SNLbGkTiOhTYhlOscnSKjh13Xygm4PeiHk77dyVUogdbbEBcBFBy4wwUOj4qTpZmeyrlLsZg"
+      clientId: ["e6bf808be7154d4d9eb3536f088105d8"]
+      authCode: ""
+      systemCode: ""
+      pgCode: ""
+      pgKey: ""
+      pgAccount: ""
+      mapCode: ""
+      presetSeqNo: 0
+      raideaNm: ""
+      imageFileSeqNo: 0
+      zoneId: "8efvlwk294810"
+      barobillId: "barobillId"
+      barobillPw: "barobillPw"
+      soEemail: "so@so.com"
+      countryCode: "kr"
+      nationalCountry: ["SA","QA"]
+      apiKey: ""
+      url: ""
+
+  SOService:
+    required:
+      - serviceNm
+      - serviceLogo
+      - useStatus
+      - timeZoneUse
+      - iipmYn
+      - rfidYn
+      - touchPadYn
+      - aqsYn
+      - fobYn
+      - keyBoxYn
+      - blueBoxYn
+      - cameraYn
+    properties:
+      serviceNm:
+        type: string
+        description: "서비스명"
+      serviceLogo:
+        type: string
+        description: "서비스 로고파일 경로"
+      useStatus:
+        type: string
+        description: "사용여부 (true:사용)"
+      vehicleType:
+        type: string
+        description: "오브젝트 타입"
+      fuelType:
+        type: string
+        description: "연료타입"
+      deviceType:
+        type: string
+        description: "디바이스 타입(01 : CS-Lite, 02 :  nFMS, 03 : Transform, 04 : X-per, 05 : P2P, 06 : Sensecope)"
+      serviceAddress:
+        type: string
+        description: "사업장 주소"
+      accidentPhoneNo:
+        type: string
+        description: "사고접수 전화번호"
+      serviceTime:
+        type: string
+        description: "고객센터 운영시간"
+      servicePhoneNo:
+        type: string
+        description: "고객센터 전화번호"
+      cancelPolicyKind:
+        type: number
+        description: "취소정책"
+      pointSaveKind:
+        type: number
+        description: "포인트 적립"
+      licenseWaitDay:
+        type: number
+        description: "면허 승인 대기일"
+      timeZone:
+        type: number
+        description: "UTC기준 타임존 조정값"
+      timeZoneUse:
+        type: boolean
+        description: "타임존 사용유무"
+      iipmYn:
+        type: boolean
+        description: "ACC IIPM 사용 유무"
+      rfidYn:
+        type: boolean
+        description: "ACC RFID 사용 유무"
+      touchPadYn:
+        type: boolean
+        description: "touch pad 사용 유무"
+      aqsYn:
+        type: boolean
+        description: "AQS 사용 유무"
+      fobYn:
+        type: boolean
+        description: "FoB 사용 유무"
+      keyBoxYn:
+        type: boolean
+        description: "key box 사용 유무"
+      blueBoxYn:
+        type: boolean
+        description: "Blue Box 사용 유무"
+      cameraYn:
+        type: boolean
+        description: "Camera 사용 유무"
+      reservUnit:
+        type: string
+        description: "예약 단위"
+      bookingPicYn:
+        type: boolean
+        description: "사진 등록 (1: 필수, 0 : 미필수)"
+      scMonOperatingTime:
+        type: boolean
+        description: "고객센터 월요일 운영시간"
+      scTueOperatingTime:
+        type: boolean
+        description: "고객센터 화요일 운영시간"
+      scWedOperatingTime:
+        type: boolean
+        description: "고객센터 수요일 운영시간"
+      scThuOperatingTime:
+        type: boolean
+        description: "고객센터 목요일 운영시간"
+      scFriOperatingTime:
+        type: boolean
+        description: "고객센터 금요일 운영시간"
+      scSatOperatingTime:
+        type: boolean
+        description: "고객센터 토요일 운영시간"
+      scSunOperatingTime:
+        type: boolean
+        description: "고객센터 일요일 운영시간"
+      scHolidayOperatingTime:
+        type: boolean
+        description: "고객센터 공휴일 운영시간"
+      contacts:
+        type: array
+        items:
+          type: object
+          properties:
+            contactType:
+              description: "customers : 고객센터\n reservations : 예약 서비스 문의\n billing : 결제 서비스 문의\n incidents : 사고 문의\n  administrative : 운영관련 문의\n lostfound : 분실물\n disabilities : 장애 관련 문의\n privacy : 개인정보 관련 문의\n partnership : 제휴 문의\n  other : 기타 문의"
+              type: string
+            contactNo:
+              type: array
+              items:
+                type: string
+                description: "여러 연락처 정보. E.164 포맷을 따른다. "
+            email:
+              description: "이메일 연락처"
+              type: string
+      clientSettings:
+        type: object
+        description: "clientSetting. map(map)안에 Object,Array 둘다 가능한 형식  \n. clientId, Key, Value는 값이 정형화되어 있지 않고 관리자가 넣는 대로 등록된다. "
+        items:
+          type: object
+    example:
+      serviceNm: "카플렛CS"
+      serviceLogo: "1.img"
+      useStatus: true
+      vehicleType: "01"
+      fuelType: ""
+      deviceType: ""
+      serviceAddress: ""
+      serviceTime: ""
+      cancelPolicyKind: 2
+      pointSaveKind: 1
+      licenseWaitDay: 0
+      timeZone: 540
+      timeZoneUse: true
+      iipmYn: true
+      rfidYn: true
+      touchPadYn: true
+      aqsYn: true
+      fobYn: true
+      keyBoxYn: false
+      blueBoxYn: true
+      cameraYn: true
+      reservUnit: ""
+      bookingPicYn: false
+      clientSettings: {
+        "dashboardTabs": [
+          {
+            "tabName": "exampleTabName1",
+            "url": "www.xxx.com"
+          },
+          {
+            "tabName": "exampleTabName2",
+            "url": "www.xxx2.com"
+          }
+        ]
+      }
+
+  #  clientSetting:
+  #    properties:
+  #      clientUI:
+  #        type: string
+  #        description: "UI설정"
+  #    example:
+  #      popup: "on"
+  #      color: "red"
+
+  SoSystem:
+    required:
+      - soSystemName
+      - soSystemRole
+    properties:
+      soSystemName:
+        type: string
+        description: "SO가 운영하는 서비스(시스템)"
+      soSystemRole:
+        type: string
+        description: "사용자 롤"
+    example:
+      soSystemName: "쏘카CS"
+      soSystemRole: "user"
+
+
+  term:
+    required:
+      - title
+      - termContent
+      - termContentType
+      - necessaryType
+      - termType
+      - appliedDate
+      - regId
+      - division
+      - contactNo
+      - useStatus
+    properties:
+      title:
+        type: string
+        description: "약관 제목"
+      termContent:
+        type: string
+        description: "약관 내용"
+      necessaryType:
+        type: number
+        description: "0:필수, 1: 선택"
+      termType:
+        type: string
+        description: "약관타입 (회원가입, 탈퇴 .. )"
+      appliedDate:
+        type: string
+        description: "적용날짜"
+      soId:
+        type: string
+        description: "soId"
+      regId:
+        type: string
+        description: "등록인"
+      division:
+        type: string
+        description: "부서"
+      contactNo:
+        type: string
+        description: "연락처"
+      useStatus:
+        type: boolean
+        description: "사용여부"
+      termContentType:
+        type: string
+        description: "약관 내용 타입 (text, html, link)"
+      supplierId:
+        type: string
+        description: "제휴사 아이디"
+      deleteFlag:
+        type: boolean
+        description: "true: 삭제, false: 삭제 아님."
+      termVer:
+        type: string
+        description: "약관 버전"
+      noticeDate:
+        type: string
+        description: "약관 공고일"
+
+
+    example:
+      title: "회원가입약관"
+      termContent: "제 1조 (목적) 이용자와 회사간의 이용 조건 및 절차 회사와 이용자의 권리 의무 및 이용에 관한 제반사항과 기타 필요한 사항을 구체적으로 규정함 을 목적으로 합니다"
+      necessaryType: 0
+      termType: "회원가입"
+      appliedDate: "2020-02-19"
+      soId: "carplat"
+      regId: "alticast"
+      division: "HR부서"
+      contactNo: "02-1010-1010"
+      useStatus: true
+      termContentType: "text"
+      supplierId: "raideaDemo"
+      deleteFlag: "false"
+      termVer: "1.0"
+      noticeDate: "2021-06-09"
+
+  termRecent:
+    properties:
+      type:
+        description: "약관타입"
+        type: string
+      termId:
+        description: "약관 아이디(key)"
+        type: string
+    example:
+      type: "회원가입"
+      termId: "a1179c99f962463e8e1a300add424a14"
+
+  address:
+    properties:
+      code:
+        description: "리턴 code (HTTP Status)"
+        type: number
+      message:
+        description: "행자부 리턴 코드 ( 0 = 정상 )"
+        type: string
+      result:
+        description: "검색 결과"
+        type: object
+        $ref: "#/definitions/addressResult"
+
+  addressdetail:
+    properties:
+      code:
+        description: "리턴 code (HTTP Status)"
+        type: number
+      message:
+        description: "행자부 리턴 코드 ( 0 = 정상 )"
+        type: string
+      result:
+        description: "검색 결과"
+        type: object
+        $ref: "#/definitions/addressResultDetail"
+
+  addressResult:
+    properties:
+      total:
+        description: "총 리턴 결과 수"
+        type: number
+      data:
+        description: "검색 결과 - limit 수 만큼 출력"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/addressResultData"
+
+  addressResultDetail:
+    properties:
+      total:
+        description: "총 리턴 결과 수"
+        type: number
+      data:
+        description: "검색 결과 - limit 수 만큼 출력"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/addressResultDataDetail"
+
+  addressResultData:
+    properties:
+      zipNo:
+        description: "zip code"
+        type: string
+      roadAddrPart1:
+        description: "도로명주소(참고항목 제외)"
+        type: string
+      roadAddrPart2:
+        description: "도로명주소 참고항목"
+        type: string
+      jibunAddr:
+        description: "지번 주소"
+        type: string
+      engAddr:
+        description: "영문주소"
+        type: string
+
+  addressResultDataDetail:
+    properties:
+      zipNo:
+        description: "zip code"
+        type: string
+      roadAddrPart1:
+        description: "도로명주소(참고항목 제외)"
+        type: string
+      roadAddrPart2:
+        description: "도로명주소 참고항목"
+        type: string
+      jibunAddr:
+        description: "지번 주소"
+        type: string
+      engAddr:
+        description: "영문주소"
+        type: string
+      admCd:
+        description: "행정구역코드"
+        type: string
+      rnMgtSn:
+        description: "도로명코드"
+        type: string
+      udrtYn:
+        description: "지하여부 (0:지상, 1:지하)"
+        type: string
+      buldMnnm:
+        description: "건물본번"
+        type: string
+      buldSlno:
+        description: "건물부번 (부번이 없는 경우 0)"
+        type: string
+      siNm:
+        description: "시/도 명"
+        type: string
+      sggNm:
+        description: "시/군/구 명"
+        type: string
+      emdNm:
+        description: "읍/면/동 명"
+        type: string
+      liNm:
+        description: "법정리 명"
+        type: string
+
+  reqBatchHoliday:
+    required:
+      - groupId
+      - timeMin
+      - timeMax
+    properties:
+      groupId:
+        description: "고객사 아이디"
+        type: string
+      timeMin:
+        description: "구글 캘린더 검색 시작일 (예 2020-01-01)"
+        type: string
+      timeMax:
+        description: "구글 캘린더 검색 종료일 (예 2021-01-01)"
+        type: string
+  reqHolidays:
+    type: array
+    items:
+      required:
+        - groupId
+        - locDate
+        - dateName
+      properties:
+        groupId:
+          description: "고객사 아이디"
+          type: string
+        locDate:
+          description: "휴일날짜 (예 20200101)"
+          type: string
+        dateName:
+          description: "휴일명 (예 신정)"
+          type: string
+  resHolidays:
+    properties:
+      code:
+        description: "결과 코드"
+        type: string
+      message:
+        description: "결과 메세지"
+        type: string
+      result:
+        description: "결과 데이터"
+        type: object
+        properties:
+          total:
+            description: "총 건수"
+            type: integer
+          data:
+            type: array
+            items:
+              properties:
+                groupId:
+                  description: "고객사 아이디"
+                  type: string
+                locDate:
+                  description: "휴일날짜 (예 20200101)"
+                  type: string
+                timeMax:
+                  description: "휴일명 (예 신정)"
+                  type: string
+  resInt:
+    properties:
+      code:
+        description: "결과 코드"
+        type: string
+      message:
+        description: "결과 메세지"
+        type: string
+      result:
+        description: "처리 건수"
+        type: integer
+
+
+  coordResult:
+    properties:
+      total:
+        description: "총 리턴 결과 수"
+        type: number
+      data:
+        description: "검색 결과 - limit 수 만큼 출력"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/coordResultData"
+
+  coordResultData:
+    properties:
+      geometry:
+        description: "geometry "
+        type: object
+        $ref: "#/definitions/locationResultData"
+
+  locationResultData:
+    properties:
+      location:
+        description: "location "
+        type: object
+        $ref: "#/definitions/coordData"
+
+  coordData:
+    properties:
+      lat:
+        description: "latitude "
+        type: number
+      lng:
+        description: "longitude "
+        type: number
+
+  reportResponse:
+    properties:
+      code:
+        description: "결과 코드"
+        type: number
+      message:
+        description: "결과 메세지"
+        type: string
+      result:
+        description: "결과"
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/report"
+
+  report:
+    required:
+      - regMemberUuid
+      - bookingId
+      - reportType
+    properties:
+      regMemberUuid:
+        type: string
+        description: "등록자 아이디(사용자 아이디)"
+      bookingId:
+        type: string
+        description: "사용자가 이용한 예약 아이디"
+      reportType:
+        type: string
+        description: "리포트 타입(이상신고, 분실습득물, 사고, 주차, 차량상태, 연료량)"
+      objectUuid:
+        type: number
+        description: "사용자가 이용한 오브젝트 Uuid (차량의 경우 VIN)"
+      title:
+        type: number
+        description: "제목"
+      content:
+        type: string
+        description: "내용"
+      imgs:
+        type: array
+        description: "사용자 업로드 사진 리스트"
+        items:
+          type: object
+          $ref: "#/definitions/img"
+    example:
+      regMemberUuid: "alticast001"
+      bookingId: "bookingId0123"
+      reportType: "분실/습득물"
+      title: "습득물"
+      content: "아이폰8 핸드폰 검정색 뒷자리에서 습득하였습니다."
+      imgs: [{
+        "type": "found",
+        "imgPath": "eNxX9NHwAl5QIAfr",
+        "shootingTime": 1593579960
+      }]
+
+  img:
+    properties:
+      type:
+        type: string
+        description: "이미지 타입구분"
+      imgPath:
+        type: string
+        description: "이미지 key 값 (image upload 서비스에 이미지 업로드 후 리턴받은 키값)"
+      shootingTime:
+        type: number
+        description: "사진 촬영시각 (utc epochTime)"
+    example:
+      type: "found"
+      imgPath: "eNxX9NHwAl5QIAfr"
+      shootingTime: 1593579960
+
+  reportTypes:
+    example: {
+      "code" : 200,
+      "message": "OK",
+      "result":["이상신고", "분실습득물", "사고", "주차", "차량상태", "연료량"]}
+
+  poiResponse:
+    properties:
+      formattedAddress:
+        type: string
+        description: "주소"
+      geometry:
+        type: object
+        description: "위경도 포함 지리정보"
+    example:
+      formattedAddress: "대한민국 서울특별시 서초구 반포동 45-2"
+      geometry: {
+        "location":{
+          "lat": 37.4989014,
+          "lng": 127.0107103
+        }
+      }
+
+  distributionChannel:
+    required:
+      - channelName
+      - channelType
+      - taxPayerId
+    properties:
+      distributionChannelId:
+        type: string
+        description: "유통채널 Id"
+      channelName:
+        type: string
+        description: "유통 채널명"
+      channelType:
+        type: integer
+        description: "유통 유형"
+      taxPayerId:
+        type: string
+        description: "사업자 등록 번호"
+      taxPalyerFileId:
+        type: string
+        description: "사업자등록증 (file id)"
+      address:
+        type: string
+        description: "주소"
+      detailAddress:
+        type: string
+        description: "상세 주소"
+      financeManager:
+        type: string
+        description: "재무 담당자명"
+      financeManagerPhone:
+        type: string
+        description: "재무 담당자 전화번호"
+      financeManagerEmail:
+        type: string
+        description: "재무 담당자 이메일"
+      soId:
+        type: string
+        description: "soId(ex.carplat)"
+      deleteFlag:
+        type: boolean
+        description: "삭제여부"
+      initDate:
+        type: number
+        description: "등록일"
+      modifyDate:
+        type: number
+        description: "수정일"
+    example:
+      channelName: "LG유플러스"
+      channelType: "1"
+      taxPayerId: "333-22-55555"
+      taxPalyerFileId: "3vhg44vh2"
+      address: ""
+      detailAddress: ""
+      financeManager: ""
+      financeManagerPhone: ""
+      financeManagerEmail: ""
+      deleteFlag: "false"
+
+  ##################################################
+  responseDeleteResult:
+    properties:
+      code:
+        type: number
+        example: 200
+      message:
+        type: string
+        example: "ok"
+      result:
+        type: object
+        $ref: "#/definitions/deleteResult"
+
+  deleteResult:
+    properties:
+      deletedCount:
+        type: integer
+        example: 1
+
+
+  responseInteger:
+    properties:
+      code:
+        type: number
+        example: 200
+        description: "응답코드"
+      message:
+        type: string
+        example: "OK"
+        description: "응답메세지"
+      result:
+        type: object
+        description: "결과값"
+    example:
+      code: 200
+      message: "OK"
+      result: 1
+
+
+  responseSupplierList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/supplierList"
+
+  supplierList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/supplier"
+      cPage:
+        type: integer
+
+  responseSupplier:
+    properties:
+      code:
+        type: integer
+        example: 200
+        description: "응답코드"
+      message:
+        type: string
+        example: "OK"
+        description: "응답메세지"
+      result:
+        type: object
+        $ref: "#/definitions/supplier"
+
+
+
+  responseCodeListNoTotal:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/code"
+
+  responseCodeList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/codeList"
+  codeList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/code"
+      cPage:
+        type: integer
+
+  responseCode:
+    properties:
+      code:
+        type: integer
+        example: 200
+        description: "응답코드"
+      message:
+        type: string
+        example: "OK"
+        description: "응답메세지"
+      result:
+        type: object
+        $ref: "#/definitions/code"
+
+
+  responseWithdrawList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/withdrawList"
+
+  withdrawList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/withdraw"
+      cPage:
+        type: integer
+
+  responseWithdraw:
+    properties:
+      code:
+        type: integer
+        example: 200
+        description: "응답코드"
+      message:
+        type: string
+        example: "OK"
+        description: "응답메세지"
+      result:
+        type: object
+        $ref: "#/definitions/withdraw"
+
+
+  responseVocList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/vocList"
+
+  vocList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/voc"
+      cPage:
+        type: integer
+
+  responseVoc:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/voc"
+
+
+
+  responseReviewList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/reviewList"
+
+  reviewList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/review"
+      cPage:
+        type: integer
+
+  responseReview:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/review"
+
+  responseMemberLabelList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/memberLabelList"
+
+  memberLabelList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/memberLabel"
+      cPage:
+        type: integer
+
+  responseMemberLabel:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/memberLabel"
+
+  responseCorpLeaseList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/corpLeaseList"
+
+  corpLeaseList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/corp-lease"
+      cPage:
+        type: integer
+
+  responseCorpLease:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/corp-lease"
+
+  responseInquireListNoTotal:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/inquire"
+
+  responseInquireList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/inquireList"
+
+  inquireList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/inquire"
+      cPage:
+        type: integer
+
+  responseInquire:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/inquire"
+
+  responseInquireAnswer:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/answerInfoPost"
+
+  responsePopupList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/popupList"
+
+  popupList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/popup"
+      cPage:
+        type: integer
+
+  responsePopup:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/popup"
+
+  responseServiceOperator:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/ServiceOperator"
+
+  responseSoSystem:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/SoSystem"
+
+  responseFaqList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/faqList"
+
+  faqList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/faq"
+      cPage:
+        type: integer
+
+  responseFaq:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/faq"
+
+
+  responseNoticeList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/noticeList"
+
+  noticeList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/notice"
+      cPage:
+        type: integer
+
+  responseNotice:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/notice"
+
+
+  responseTermList:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/termList"
+
+  termList:
+    properties:
+      total:
+        type: integer
+      data:
+        type: array
+        items:
+          type: object
+          $ref: "#/definitions/term"
+      cPage:
+        type: integer
+
+  responseTerm:
+    properties:
+      code:
+        type: integer
+        example: 200
+      message:
+        type: string
+        example: "OK"
+      result:
+        type: object
+        $ref: "#/definitions/term"
