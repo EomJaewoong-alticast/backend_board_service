@@ -60,7 +60,7 @@ paths:
           required: true
           type: integer
           format: int32
-          default: 1
+          default: 10
         - name: count
           in: query
           description: offset count
@@ -87,10 +87,10 @@ paths:
               result:
                 $ref: '#/definitions/ResponseGetPosts'
         400:
-          description: "Invalid Querystring Request\n - 4001: Offset 또는 count가 맞지않거나 누락, 범위를 벗어날 때(Offset or count dose not match) \n - 4002: 쿼리에 오류가 있을 때(Query does not meet the condition)"
+          description: "Invalid Querystring Request\n - 4001: Offset 값이 잘못된 경우(Offset value is missing or invalid) \n - 4002: count 값이 잘못된 경우(Count value is missing or invalid) \n - 4003: q값이 잘못된 경우(q doesn't match condition)"
           schema:
             $ref: '#/definitions/Error'
-        405:
+        404:
           $ref: '#/responses/NoExistMethodError'
 
         500:
@@ -142,7 +142,7 @@ paths:
                   postId:
                     type: integer
         400:
-          description: "Invalid Querystring Request\n - 4004: 값들이 비어있거나, 카테고리가 맞지 않는 경우(Invalid value) \n - 4005: 노출 시간이 등록 시점보다 이전일 때(Incorrect exposure time)"
+          description: "Invalid Querystring Request\n - 4004: 값이 비어있거나 잘못 된 경우(Invalid value) \n - 4005: 노출 시간이 등록 시점보다 이전일 때(Incorrect exposure time)"
           schema:
             $ref: '#/definitions/Error'
         405:
@@ -151,7 +151,7 @@ paths:
         500:
           $ref: '#/responses/InternalError'
 
-  /posts/traces/{postId}:
+  /posts/{postId}/traces:
     # 게시글 수정이력 조회
     get:
       tags:
@@ -223,13 +223,11 @@ paths:
         - name: startDate
           in: query
           description: 기간 설정 시작일
-          type: string
-          format: date-time
+          type: integer
         - name: endDate
           in: query
           description: 기간 설정 마감일
-          type: string
-          format: date-time
+          type: integer
       responses:
         200:
           description: operation success
@@ -246,7 +244,7 @@ paths:
               result:
                 $ref: '#/definitions/ResponseGetTraces'
         400:
-          description: "Invalid Querystring Request\n - 4006: 시작기간이 미래, 마감기간이 과거, 마감기간이 시작기간보다 과거일 때(Wrong date input)"
+          description: "Invalid Querystring Request\n - 4001: Offset 값이 잘못된 경우(Offset value is missing or invalid) \n - 4002: count 값이 잘못된 경우(Count value is missing or invalid) \n - 4003: q값이 잘못된 경우(q doesn't match condition)\n - 4010: 시작기간이 미래, 마감기간이 시작기간보다 과거일 때(Invalid date)"
           schema:
             $ref: '#/definitions/Error'
         405:
@@ -255,7 +253,7 @@ paths:
         500:
           $ref: '#/responses/InternalError'
 
-  /posts/traces/{postId}/{version}:
+  /posts/{postId}/traces/{version}:
     # 게시글 수정이력 상세 조회
     get:
       tags:
@@ -297,11 +295,11 @@ paths:
                 example: OK
               result:
                 $ref: '#/definitions/Trace'
-        404:
-          description: "No Post or Trace\n - 4007: 존재하지 않는 게시물의 ID일 때(can't find Post)\n - 4008: 존재하지 않는 수정이력 버전일 때(can't find Trace. PostId=2)"
+        400:
+          description: "No Post or Trace\n - 4009: 존재하지 않는 수정이력 버전일 때(can't find Trace. PostId=2)"
           schema:
             $ref: '#/definitions/Error'
-        405:
+        404:
           $ref: '#/responses/NoExistMethodError'
 
         500:
@@ -340,11 +338,11 @@ paths:
                 example: OK
               result:
                 $ref: '#/definitions/Post'
-        404:
-          description: "No Post\n - 4007: 존재하지 않는 게시물의 ID일 때(This post does not exist)"
+        400:
+          description: "No Post\n - 4008: 존재하지 않는 게시물의 ID일 때(Post[postId] dose not exist)"
           schema:
             $ref: '#/definitions/Error'
-        405:
+        404:
           $ref: '#/responses/NoExistMethodError'
 
         500:
@@ -382,15 +380,26 @@ paths:
                 format: int32
               message:
                 type: string
+              result:
+                type: object
+                properties:
+                  postId:
+                    type: integer
+                  version:
+                    type: integer
             example:
               code: 200
               message: post updated
+              result: {
+                postId: 3,
+                version: 4
+              }
         400:
-          description: "Invaild value Request\n - 4004: 모든 값들이 비어있거나, 카테고리가 맞지 않는 경우(Invalid value)"
+          description: "Invaild value Request\n - 4004: 값이 비어있거나 잘못 된 경우(Invalid value)\n - 4007: 수정된 내용이 없을 때(post[postId] is not modified)\n - 4008: 존재하지 않는 게시물(Post[postId] dose not exist)"
           schema:
             $ref: '#/definitions/Error'
         404:
-          description: "No Post\n - 4007: 존재하지 않는 게시물의 ID일 때(This post does not exist)"
+          description: "No Post"
           schema:
             $ref: '#/definitions/Error'
         405:
@@ -411,10 +420,29 @@ paths:
       produces:
         - application/json
       responses:
-        204:
+        200:
           description: "successful operation"
-        404:
-          description: "No Post\n - 4007: 존재하지 않는 게시물의 ID일 때(This post does not exist)"
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              result:
+                type: object
+                properties:
+                  postId:
+                    type: integer
+            example:
+              code: 200
+              message: post deleted
+              result: {
+                postId: 3
+              }
+        400:
+          description: "No Post\n - 4006: 이미 삭제된 글을 다시 삭제하려 할 때(Post[postId] is already deleted)\n - 4008: 존재하지 않는 게시물(Post[postId] dose not exist)"
           schema:
             $ref: '#/definitions/Error'
         405:
@@ -461,6 +489,9 @@ definitions:
         type: string
         format: date-time
         description: 게시 날짜
+      delYn:
+        type: boolean
+        default: false
 
   Trace:
     type: object
@@ -522,8 +553,9 @@ definitions:
         example: 작성자
       showedAt:
         type: string
-        format: date-time
+        format: timestamp
         description: 게시 날짜
+        example: 1637800725290
 
   RequestUpdatePost:
     type: object
@@ -548,7 +580,7 @@ definitions:
         type: string
         description: 작성자
         example: 작성자2
-      isDeleted:
+      delYn:
         type: boolean
         default: false
         description: 글이 삭제되었는지의 여부
@@ -567,7 +599,31 @@ definitions:
         type: array
         description: 게시글들
         items:
-          $ref: '#/definitions/Post'
+          type: object
+          properties:
+            postId:
+              type: integer
+              format: int64
+              description: 글 ID
+            category:
+              type: string
+              description: 카테고리(code)
+            title:
+              type: array
+              items:
+                $ref: '#/definitions/Title'
+            author:
+              type: string
+              description: 작성자
+            createdAt:
+              type: string
+              description: 작성 날짜
+            updatedAt:
+              type: string
+              description: 최종 수정 날짜
+            showedAt:
+              type: string
+              description: 게시 날짜
 
   ResponseGetTraces:
     type: object
@@ -586,7 +642,26 @@ definitions:
         type: array
         description: 수정이력들
         items:
-          $ref: '#/definitions/Trace'
+          type: object
+          properties:
+            version:
+              type: integer
+              format: int64
+              description: 수정된 글의 버전
+            title:
+              type: array
+              items:
+                $ref: '#/definitions/Title'
+            content:
+              type: string
+              description: 글 내용(title, content 중 하나는 바뀐 내용이 존재해야 한다)
+            editor:
+              type: string
+              description: 수정자
+            editedAt:
+              type: string
+              format: date-time
+              description: 수정 날짜
 
   ###### Code
   Category:
@@ -626,18 +701,7 @@ definitions:
 ###### Error Response
 responses:
   NoExistMethodError:
-    description: "Invalid Method Request\n - 4003: 맞지 않는 method 요청"
-    schema:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-      example:
-        code: 4003
-        message: A method request that does not exist.
+    description: "Not Found"
 
   InternalError:
     description: "internal server error\n - 서버 내부 오류"
