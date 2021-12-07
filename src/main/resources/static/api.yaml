@@ -14,7 +14,7 @@ tags:
   - name: Posts
     description: Post management
 schemes:
-  - https
+#  - https
   - http
 paths:
   /posts:

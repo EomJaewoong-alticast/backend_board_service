@@ -8,9 +8,9 @@ spring:
   data:
     mongodb:
       #uri: mongodb://mango:banana@mongo-1:27017,mongo-2:27017,mongo-3:27017/mongodemo?replicaSet=turple
-      #uri: mongodb+srv://mango:banana4apple@dev.2iplu.mongodb.net/mongodemo?retryWrites=true&w=majority
-      uri: mongodb://127.0.0.1:27017
-      database: eom
+      uri: mongodb+srv://mango:banana4apple@dev.2iplu.mongodb.net/mongodemo?retryWrites=true&w=majority
+      #uri: mongodb://127.0.0.1:27017
+      #database: eom
     application:
       name: board-service
 
