@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document
  *
  *  id에 따라 sequence를 매김
  */
-@Document(collection = "sequences")
+@Document(collection = "sequencesEom")
 data class Sequence (
     @Id var id: String,
     var seq: Long
