@@ -1,22 +1,57 @@
 package com.msp.board_service.domain
 
+import org.hibernate.validator.constraints.Length
 import org.springframework.data.mongodb.core.mapping.Document
-import java.sql.Timestamp
-import java.time.LocalDateTime
+import javax.validation.constraints.*
 
 /**
  * 게시글 Domain
  */
 @Document(collection = "posts")
 data class Post(
-    var postId: String,                                            // 글 ID
-    var category: String,                                          // 카테고리
-    var title: ArrayList<HashMap<String, String>>,                 // 제목
-    var content: String,                                           // 내용
-    var author: String,                                            // 작성자
-    var createdAt: String
-        = Timestamp.valueOf(LocalDateTime.now()).time.toString(),  // 생성 시간
-    var updatedAt: String? = null,                                 // 수정 시간
-    var showedAt: String = createdAt,                              // 노출 시간
-    var delYn: Boolean? = false                                    // 삭제 여부
+    // 글 ID
+    @field:NotBlank(message = "postId does not exist")
+    @field:Digits(
+        integer = Integer.MAX_VALUE,
+        fraction = 0,
+        message = "postId does not matched")
+    var postId: String,
+
+    // 카테고리
+    @field:Pattern(regexp = "^C[0-9][0-9][0-9]$", message = "category dose not matched")
+    var category: String,
+
+    // 제목
+    @field:NotNull(message = "title does not exist")
+    var title: ArrayList<@NotNull(message = "title does not exist")
+                         @Size(min=1, message = "title does not exist") HashMap<String,
+            @Length(min=2, max=100, message="title's length must be between 2 to 100") String>>,
+
+    // 내용
+    @field:NotBlank(message = "content does not exist")
+    @Length(max = 2000, message = "The maxinum content length is 2000")
+    var content: String,
+
+    // 작성자
+    @field:NotBlank(message = "author does not exist")
+    @Length(min=2, max=20, message = "author's length must be between 2 to 20")
+    var author: String,
+
+    // 생성 시간
+    @field:NotBlank(message = "createdAt does not exist")
+    var createdAt: String,
+
+    // 수정 시간
+    @field:NotBlank(message = "updatedAt does not exist")
+    var updatedAt: String,
+
+    // 노출 시간
+    @field:NotBlank(message = "showedAt does not exist")
+    var showedAt: String,
+
+    // 삭제 여부
+    @field:NotBlank(message = "delYn does not exist")
+    @field:AssertTrue(message = "delYn does not matched")
+    @field:AssertFalse(message = "delYn does not matched")
+    var delYn: Boolean
 )
