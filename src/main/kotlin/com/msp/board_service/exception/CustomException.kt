@@ -1,5 +1,7 @@
 package com.msp.board_service.exception
 
+import javax.validation.Path
+
 class CustomException: Exception {
     var errorCode = 0
 
@@ -19,7 +21,7 @@ class CustomException: Exception {
         fun OffsetInvalid() = CustomException("Offset value is missing or invalid", 4001)
         fun CountInvalid() = CustomException("Count value is missing or invalid", 4002)
         fun QueryNotMatched(q: String) = CustomException("q doesn't match condition - q: $q", 4003)
-        fun InValidValue() = CustomException("Invalid Valie", 4004)
+        fun InValidValue(input: Any?, field: Path, msg: String) = CustomException("Invalid Value - input value: ${input}, field: ${field}, message: ${msg}", 4004)
         fun IncorrectExposureTime() = CustomException("Incorrect exposure time", 4005)
         fun AlreadyDeleted(postId: String) = CustomException("Post[${postId}] is already deleted", 4006)
         fun NotModified(postId: String) = CustomException("post[${postId}] is not modified", 4007)

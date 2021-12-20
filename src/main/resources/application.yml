@@ -14,11 +14,6 @@ spring:
     application:
       name: board-service
 
-logging:
-  file: /usr/local/logs
-  level:
-    root: DEBUG
-
 info:
   app:
     name: Board Service
