@@ -9,10 +9,35 @@ spring:
     mongodb:
       #uri: mongodb://mango:banana@mongo-1:27017,mongo-2:27017,mongo-3:27017/mongodemo?replicaSet=turple
       uri: mongodb+srv://mango:banana4apple@dev.2iplu.mongodb.net/mongodemo?retryWrites=true&w=majority
-      #uri: mongodb://127.0.0.1:27017
-      #database: eom
     application:
       name: board-service
+
+cloud:
+  config:
+    label: develop
+  output:
+    ansi:
+      enabled: always
+  sleuth:
+    async:
+      enabled: false
+    sampler:
+      probability: 0 #로그 수집의 퍼센트 설정. 1 = 100%  0.1 = 10%(default)
+    scheduled:
+      skipPattern: org.springframework.cloud.netflix.hystrix.stream.HystrixStreamTask
+
+eureka:
+  instance:
+    preferIpAddress: true # 서비스 이름 대신 서비스 Ip 주소 등록 옵션
+    leaseRenewalIntervalInSeconds: 1  # 디스커버리한테 1초마다 하트비트 전송
+    leaseExpirationDurationInSeconds: 2 # 디스커버리는 서비스 등록 해제 하기 전에 마지막 하트비트에서부터 2초 기다림22
+  client:
+    registerWithEureka: true # 유레카에 서비스 등록
+    fetchRegistry: true  # 유레카 서비스 위치
+    serviceUrl:
+      defaultZone: http://host.docker.internal:8761/eureka/   # 레지스트리 사본을 로컬로 가져오기(in docker)
+      # defaultZone: http://localhost:8761/eureka/   # 레지스트리 사본을 로컬로 가져오기(in local)
+    registryFetchIntervalSeconds: 5
 
 info:
   app:

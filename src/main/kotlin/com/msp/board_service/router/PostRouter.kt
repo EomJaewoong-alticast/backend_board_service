@@ -14,7 +14,7 @@ class PostRouter() {
     @Bean
     fun postRoutes(postHandler: PostHandler) = router {
         accept(MediaType.APPLICATION_JSON).nest {
-            "board-service/v1.0".nest {
+            "v1.0".nest {
                 GET("/posts", postHandler::getPostList)             // 게시글 목록 조회
                 POST("/posts", postHandler::createPost)             // 게시글 등록
                 GET("/posts/{postId}", postHandler::getPost)        // 게시글 조회

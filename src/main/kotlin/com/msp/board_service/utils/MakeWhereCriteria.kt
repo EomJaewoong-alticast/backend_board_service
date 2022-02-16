@@ -76,28 +76,28 @@ class MakeWhereCriteria {
                             }
                         }
                         "int" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toInt())
                             }
                         }
                         "long" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toLong())
                             }
                         }
                         "float" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toFloat())
                             }
                         }
                         "double" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toDouble())

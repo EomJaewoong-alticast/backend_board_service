@@ -143,13 +143,13 @@ class PostService: PostServiceIn {
         return this.commonService.generateSequence(SEQUENCE_NAME_POST).flatMap {
             val post = Post(
                 postId = it,
-                category = createdPost.category!!,
-                title = createdPost.title!!,
-                content = createdPost.content!!,
-                author = createdPost.author!!,
+                category = createdPost.category,
+                title = createdPost.title,
+                content = createdPost.content,
+                author = createdPost.author,
                 createdAt = currentTime,
                 updatedAt = currentTime,
-                showedAt = createdPost?.showedAt ?: currentTime,
+                showedAt = createdPost.showedAt ?: currentTime,
                 delYn = false
             )
             postRepository.insertPost(post)
@@ -299,8 +299,8 @@ class PostService: PostServiceIn {
         val stopWatch = StopWatch("[PostService]getTraceList")
         stopWatch.start("find Post")
         return postRepository.findPostCount(Query()
-            .addCriteria(Criteria.where("postId").`is`(postId))).flatMap { cnt ->
-            if(cnt == 0L)   // 해당 글이 없는 경우
+            .addCriteria(Criteria.where("postId").`is`(postId))).flatMap {
+            if(it == 0L)   // 해당 글이 없는 경우
                 Mono.error(CustomException.NoPost(postId))
 
             else {
@@ -445,7 +445,7 @@ class PostService: PostServiceIn {
             )
 
         // 노출 시간이 현재보다 과거인지 체크
-        if(createdPost?.showedAt != null && createdPost.showedAt!! < currentTime) {
+        if(createdPost.showedAt != null && createdPost.showedAt!! < currentTime) {
             throw CustomException.IncorrectExposureTime()
         }
     }
