@@ -14,8 +14,15 @@ tags:
   - name: Posts
     description: Post management
 schemes:
-#  - https
   - http
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+security:
+  - ApiKeyAuth: []
+
 paths:
   /posts:
     # 게시글 목록 조회

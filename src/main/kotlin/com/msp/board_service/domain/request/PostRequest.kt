@@ -15,21 +15,24 @@ data class PostCreateRequest(
         regexp = """^C[0-9][0-9][0-9]$""",
         message = "category is not matched"
     )
-    var category: String?,
+    @get:NotNull(message = "category does not exist")
+    var category: String,
 
     // 제목
-    @field:NotNull(message = "title does not exist")
+    @get:NotNull(message = "title does not exist")
     var title: ArrayList<@NotNull(message = "title does not exist")
     @Size(min=1, message = "title does not exist") HashMap<String,
             @Length(min=2, max=100, message="title's length must be between 2 to 100") String>>,
 
     // 내용
     @get:NotBlank(message = "content is empty")
-    var content: String?,
+    @get:NotNull(message = "content does not exist")
+    var content: String,
 
     // 작성자
     @get:NotBlank(message = "author is empty")
-    var author: String?,
+    @get:NotNull(message = "author does not exist")
+    var author: String,
 
     // 노출 시간
     var showedAt: String?

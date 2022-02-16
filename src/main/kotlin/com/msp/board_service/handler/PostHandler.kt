@@ -6,6 +6,7 @@ import com.msp.board_service.domain.response.Response
 import com.msp.board_service.exception.CustomException
 import com.msp.board_service.service.PostService
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.util.StopWatch
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -23,7 +24,7 @@ class PostHandler(val postService: PostService) {
 
     /**
      * 글 목록 조회 - 01
-     * @param offset, count, q
+     * @params offset, count, q
      * @return PostListResponse
      */
     fun getPostList(req: ServerRequest): Mono<ServerResponse> {
@@ -43,7 +44,9 @@ class PostHandler(val postService: PostService) {
             )
         }.flatMap {
             logger.debug("SUCCESS - [PostHandler]getPostList _ queryParams : ${req.queryParams()}")
-            ok().body(Mono.just(Response(200, "OK", it)))
+            ok()
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(Mono.just(Response(200, "OK", it)))
         }.onErrorResume {
             logger.error("FAILURE - [PostHandler]getPostList _ message : ${it.message.toString()} queryParams : ${req.queryParams()}")
             when(it) {
@@ -60,7 +63,7 @@ class PostHandler(val postService: PostService) {
 
     /**
      * 글 생성 - 02
-     * @param PostCreateRequest
+     * @params PostCreateRequest
      * @return postIdResponse
      */
     fun createPost(req: ServerRequest): Mono<ServerResponse> {
@@ -105,7 +108,9 @@ class PostHandler(val postService: PostService) {
 
         return this.postService.getPost(req.pathVariable("postId")).flatMap {
             logger.debug("SUCCESS - [PostHandler]getPost _ pathVariable : ${req.pathVariables()}")
-            ok().body(Mono.just(Response(200, "OK", it)))
+            ok()
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(Mono.just(Response(200, "OK", it)))
         }.switchIfEmpty(    // 요청온 postId로 조회된 글이 없는 경우 예
             Mono.error(CustomException.NoPost(req.pathVariable("postId")))
         ).onErrorResume {
@@ -210,7 +215,9 @@ class PostHandler(val postService: PostService) {
             )
         }.flatMap {
             logger.debug("SUCCESS - [PostHandler]getTraceList _ queryParams : ${req.queryParams()}")
-            ok().body(Mono.just(Response(200, "OK", it)))
+            ok()
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(Mono.just(Response(200, "OK", it)))
         }.onErrorResume {
             logger.error("FAILURE - [PostHandler]getTraceList _ message : ${it.message.toString()} queryParams : ${req.queryParams()}")
             when(it) {
@@ -238,7 +245,9 @@ class PostHandler(val postService: PostService) {
 
         return this.postService.getTrace(req.pathVariable("postId"), req.pathVariable("version")).flatMap {
             logger.debug("SUCCESS - [PostHandler]getTrace _ pathVariable : ${req.pathVariables()}")
-            ok().body(Mono.just(Response(200, "OK", it)))
+            ok()
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(Mono.just(Response(200, "OK", it)))
         }.switchIfEmpty(
             Mono.error(CustomException.NoTrace(req.pathVariable("postId"), req.pathVariable("version")))
         ).onErrorResume {
