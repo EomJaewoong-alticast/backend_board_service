@@ -1,9 +1,6 @@
 package com.msp.board_service.domain.request
 
-import org.hibernate.validator.constraints.ConstraintComposition
 import org.hibernate.validator.constraints.Length
-import java.sql.Timestamp
-import java.time.LocalDateTime
 import javax.validation.constraints.*
 
 /**
@@ -15,7 +12,7 @@ data class PostCreateRequest(
         regexp = """^C[0-9][0-9][0-9]$""",
         message = "category is not matched"
     )
-    @get:NotNull(message = "category does not exist")
+    @get:NotBlank(message = "category does not exist")
     var category: String,
 
     // 제목
@@ -26,15 +23,16 @@ data class PostCreateRequest(
 
     // 내용
     @get:NotBlank(message = "content is empty")
-    @get:NotNull(message = "content does not exist")
+    @get:Length(max = 2000, message = "The maxinum content length is 2000")
     var content: String,
 
     // 작성자
     @get:NotBlank(message = "author is empty")
-    @get:NotNull(message = "author does not exist")
+    @get:Length(min=2, max=20, message = "author's length must be between 2 to 20")
     var author: String,
 
     // 노출 시간
+    @field:Pattern(regexp = """^[1-9]+[0-9]?$""", message = "showedAt does not matched")
     var showedAt: String?
 )
 

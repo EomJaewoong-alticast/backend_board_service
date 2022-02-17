@@ -2,17 +2,23 @@ package com.msp.board_service.router
 
 import com.msp.board_service.handler.PostHandler
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.router
+import java.net.URI
 
 /**
  * PostRouter
  */
 @Component
-class PostRouter() {
+@Configuration
+class PostRouter {
     @Bean
     fun postRoutes(postHandler: PostHandler) = router {
+        accept(MediaType.TEXT_HTML).nest{
+            GET("/"){permanentRedirect(URI("index.html")).build()}
+        }
         accept(MediaType.APPLICATION_JSON).nest {
             "v1.0".nest {
                 GET("/posts", postHandler::getPostList)             // 게시글 목록 조회

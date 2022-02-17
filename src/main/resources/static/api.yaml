@@ -13,6 +13,8 @@ basePath: /board-service/v1.0
 tags:
   - name: Posts
     description: Post management
+  - name: Others
+    description: Other feature management
 schemes:
   - http
 securityDefinitions:
@@ -24,6 +26,21 @@ security:
   - ApiKeyAuth: []
 
 paths:
+  /other:
+    get:
+      tags:
+        - Others
+      summary: feign Client 테스트
+      description: good
+      operationId: getBoardOther
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ok
+
   /posts:
     # 게시글 목록 조회
     get:
@@ -215,7 +232,7 @@ paths:
           required: true
           type: integer
           format: int32
-          default: 1
+          default: 10
         - name: count
           in: query
           description: offset count
@@ -458,6 +475,14 @@ paths:
         500:
           $ref: '#/responses/InternalError'
 
+#securityDefinitions:
+#  ApiKeyAuth:
+#    type: apiKey
+#    in: header
+#    name: Authorization
+#security:
+#  - ApiKeyAuth: []
+
 definitions:
   ###### Data model
   Post:
@@ -696,7 +721,7 @@ definitions:
   ###### Error
   Error:
     type: object
-    description: "에러 Code\n - 4001: Offset 또는 count가 맞지않거나 누락, 범위를 벗어날 때(Offset or count dose not match) \n - 4002: 쿼리에 오류가 있을 때(Query does not meet the condition) \n - 4003: 맞지 않는 method 요청(A method request that does not exist) \n  - 4004: 값들이 비어있거나, 카테고리가 맞지 않는 경우(Invalid value) \n - 4005: 노출 시간이 등록 시점보다 이전일 때(Incorrect exposure time)\n - 4006: 시작기간이 미래, 마감기간이 과거, 마감기간이 시작기간보다 과거일 때(Wrong date input)\n - 4007: 존재하지 않는 게시물의 ID일 때(This post does not exist)"
+    description: "에러 Code\n - 4001: Offset 또는 count가 맞지않거나 누락, 범위를 벗어날 때(Offset or count dose not match) \n - 4002: 쿼리에 오류가 있을 때(Query does not meet the condition) \n - 4003: 맞지 않는 method 요청(A method request that does not exist) \n  - 4004: 값들이 비어있거나, 카테고리가 맞지 않는 경우(Invalid value) \n - 4005: 노출 시간이 등록 시점보다 이전일 때(Incorrect exposure time)\n - 4006: 시작기간이 미래, 마감기간이 과거, 마감기간이 시작기간보다 과거일 때(Wrong date input)\n - 4007: 존재하지 않는 게시물의 ID일 때(This post does not exist)\n - 501: feign client 접속 오류시 상황"
     properties:
       code:
         type: integer

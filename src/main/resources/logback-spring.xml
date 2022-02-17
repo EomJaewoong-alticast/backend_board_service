@@ -13,7 +13,7 @@
     <appender name="INFO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
         <!-- 저장될 로깅 파일 형식(INFO) -->
-        <file>./logs/info.log</file>
+        <file>/tmp/logs/info.log</file>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
             <onMatch>ACCEPT</onMatch><!-- INFO LEVEL만 기록 -->
@@ -36,7 +36,7 @@
     <!-- 저장될 로깅 파일 형식(WARNING) -->
     <appender name="WARN_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-        <file>./logs/warn.log</file>
+        <file>/tmp/logs/warn.log</file>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>WARN</level>
             <onMatch>ACCEPT</onMatch>

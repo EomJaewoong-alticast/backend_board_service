@@ -1,6 +1,7 @@
 package com.msp.board_service.service
 
-import com.mongodb.client.result.UpdateResult
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.msp.board_service.common.CommonService
 import com.msp.board_service.domain.Post
 import com.msp.board_service.domain.Trace
@@ -8,8 +9,8 @@ import com.msp.board_service.domain.request.PostCreateRequest
 import com.msp.board_service.domain.request.PostUpdateRequest
 import com.msp.board_service.domain.response.PostIdResponse
 import com.msp.board_service.domain.response.PostListResponse
+import com.msp.board_service.domain.response.PostResponse
 import com.msp.board_service.domain.response.TraceListResponse
-import com.msp.board_service.domain.response.TraceVersionResponse
 import com.msp.board_service.exception.CustomException
 import com.msp.board_service.repository.PostRepository
 import com.msp.board_service.repository.TraceRepository
@@ -22,44 +23,34 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
-import org.springframework.data.mongodb.core.query.where
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.stereotype.Service
 import org.springframework.util.StopWatch
 import reactor.core.publisher.Mono
 import java.sql.Timestamp
-import java.time.Instant
+import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
 import javax.validation.Validation
-import kotlin.collections.ArrayList
-
-interface PostServiceIn {
-    fun getPostList(offset: Long, count: Long, q: String): Mono<Any>
-    fun createPost(createdPost: PostCreateRequest, currentTime: String): Mono<PostIdResponse>
-    fun getPost(postId: String): Mono<Post>
-    fun updatePost(postId: String, updatedPost: PostUpdateRequest): Mono<Any>
-    fun deletePost(postId: String): Mono<Any>
-
-    fun getTraceList(postId: String, offset: Long, count: Long, q: String, startDate: String, endDate: String): Mono<Any>
-    fun getTrace(postId: String, version: String): Mono<Trace>
-
-    // validation
-    fun listRangeValidation(offset: String, count: String): Mono<Any>
-    fun createdPostValidation(createdPost: PostCreateRequest, currentTime: String)
-    fun updatedPostValidation(updatedPost: PostUpdateRequest)
-    fun traceListValidation(offset: String, count: String,
-                            startDate: String, endDate: String, currentTime: String): Mono<Any>
-}
+import kotlin.math.roundToInt
 
 @Service
-class PostService: PostServiceIn {
-    private val logger = LoggerFactory.getLogger(this::class.java)
+class PostService{
+    private val logger = LoggerFactory.getLogger(this::class.java)  // logger
+    private val mapper = jacksonObjectMapper()                      // json 직렬화를 위한 jackson Object Mapper
+
+    init {
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)  // Deserialize시 필드 제외 옵션
+    }
 
     companion object {
         const val SEQUENCE_NAME_POST = "posts_sequence"
         const val SEQUENCE_NAME_TRACE = "traces_sequence"
     }
+
+    @Autowired
+    lateinit var redisTemplate: ReactiveRedisTemplate<String, String>
 
     @Autowired
     lateinit var postRepository: PostRepository
@@ -73,7 +64,7 @@ class PostService: PostServiceIn {
     /**
      * 게시글 목록 조회
      */
-    override fun getPostList(offset: Long, count: Long, q: String): Mono<Any> {
+    fun getPostList(offset: Long, count: Long, q: String): Mono<PostListResponse> {
         logger.info("[PostService]getPostList start")
 
         // Aggregation Operation 집합
@@ -88,8 +79,8 @@ class PostService: PostServiceIn {
         listAggOps.add(match)
 
         // paging
-        val skip = Aggregation.skip((count-1).toLong()*offset)
-        val cnt = Aggregation.limit(offset.toLong())
+        val skip = Aggregation.skip((count-1)*offset)
+        val cnt = Aggregation.limit(offset)
         countAggOps.add(skip)
         countAggOps.add(cnt)
         listAggOps.add(skip)
@@ -102,6 +93,7 @@ class PostService: PostServiceIn {
             "title",
             "author",
             "createdAt",
+            "updatedAt",
             "showedAt"
         ))
 
@@ -109,24 +101,30 @@ class PostService: PostServiceIn {
         val countAgg = Aggregation.newAggregation(countAggOps)
         val listAgg = Aggregation.newAggregation(listAggOps)
 
+        logger.info("query - aggregation: $listAgg")
+
         val stopWatch = StopWatch("[PostService]getPostList")
         stopWatch.start("Post Counting")
-        return postRepository.findPostCount(countAgg).flatMap { total ->
+
+        return postRepository.findPostCount(countAgg).zipWhen{
             stopWatch.stop()
-            stopWatch.start("finding posts")
+            logger.info("[PostService]getPostList - findPostCount Complete [count: ${it}]")
+            stopWatch.start("Find Post list")
             postRepository.findPostList(listAgg).doOnNext {
                 // 날짜들을 Timestamp -> 'yyyy-MM-dd HH:mm:ss' 형식으로 변환
-                it.createdAt = TimestampToLocaltime(it.createdAt)
-                it.updatedAt?.run {
-                    it.updatedAt = TimestampToLocaltime(it.updatedAt!!)
-                }
-                it.showedAt = TimestampToLocaltime(it.showedAt)
-            }.collectList().flatMap { posts ->
-                Mono.just(PostListResponse(total, posts))
-            }.doFinally{
-                stopWatch.stop()
-                logger.info(stopWatch.prettyPrint())
-                logger.info("[PostService]getPostList end | ${stopWatch.shortSummary()}")
+                it.createdAt = timestampToLocaltime(it.createdAt)
+                it.updatedAt = timestampToLocaltime(it.updatedAt)
+                it.showedAt = timestampToLocaltime(it.showedAt)
+            }.collectList()
+        }.flatMap {
+            logger.info("[PostService]getPostList - findPostList Complete")
+            Mono.just(PostListResponse(it.t1, it.t2))
+        }.doFinally{
+            stopWatch.stop()
+            logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+            stopWatch.taskInfo.forEach {
+                logger.info("name: ${it.taskName}, %: ${((it.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                        "elapsed: ${it.timeMillis} ms")
             }
         }
     }
@@ -134,96 +132,133 @@ class PostService: PostServiceIn {
     /**
      * 글 생성
      */
-    override fun createPost(createdPost: PostCreateRequest, currentTime: String): Mono<PostIdResponse> {
+    fun createPost(createdPost: PostCreateRequest, currentTime: String): Mono<PostIdResponse> {
         logger.info("[PostService]createPost start")
         val stopWatch = StopWatch("[PostService]createPost")
         stopWatch.start("Post Creating")
 
         // PostId sequence 생성 후 insert
         return this.commonService.generateSequence(SEQUENCE_NAME_POST).flatMap {
-            val post = Post(
-                postId = it,
-                category = createdPost.category,
-                title = createdPost.title,
-                content = createdPost.content,
-                author = createdPost.author,
-                createdAt = currentTime,
-                updatedAt = currentTime,
-                showedAt = createdPost.showedAt ?: currentTime,
-                delYn = false
-            )
-            postRepository.insertPost(post)
+            logger.info("[PostService]createPost - generateSequence Complete [sequence: ${it}]")
+            val post = createdPost.run {
+                Post(
+                    postId = it,
+                    category = category,
+                    title = title,
+                    content = content,
+                    author = author,
+                    createdAt = currentTime,
+                    updatedAt = currentTime,
+                    showedAt = showedAt ?: currentTime,
+                    delYn = false
+                )
+            }
+            postRepository.insertPost(post).zipWhen {
+                redisTemplate.opsForValue().set("post:${it.postId}", mapper.writeValueAsString(it))
+            }.zipWhen {
+                redisTemplate.expire("post:${it.t1.postId}", Duration.ofHours(1))
+            }
         }.flatMap {
-            Mono.just(PostIdResponse(it.postId))
+            logger.info("[PostService]createPost - insertPost Complete")
+            Mono.just(PostIdResponse(it.t1.t1.postId))
         }.doFinally {
-            logger.info("[PostService]createPost end | ${stopWatch.shortSummary()}")
+            stopWatch.stop()
+            logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+            stopWatch.taskInfo.forEach {
+                logger.info("name: ${it.taskName}, %: ${((it.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                        "elapsed: ${it.timeMillis} ms")
+            }
         }
     }
 
     /**
      * postId 기반 글 조회
      */
-    override fun getPost(postId: String): Mono<Post> {
+    fun getPost(postId: String): Mono<PostResponse> {
         logger.info("[PostService]getPost start")
         val stopWatch = StopWatch("[PostService]getPost")
         stopWatch.start("Post getting")
 
         val query = Query().addCriteria(Criteria.where("postId").`is`(postId))
-        return postRepository.findPost(query).doFinally {
-            logger.info("[PostService]getPost end | ${stopWatch.shortSummary()}")
+
+        return redisTemplate.opsForValue().get("post:${postId}").switchIfEmpty(
+            postRepository.findPost(query).zipWhen {
+                redisTemplate.opsForValue().set("post:${postId}", mapper.writeValueAsString(it)).flatMap {
+                    redisTemplate.expire("post:${postId}", Duration.ofMinutes(30))
+                }
+            }.flatMap {
+                Mono.just(mapper.writeValueAsString(it.t1))
+            }
+        ).flatMap {
+            Mono.just(mapper.readValue(it, PostResponse::class.java).also{
+                it.createdAt = timestampToLocaltime(it.createdAt)
+                it.updatedAt = timestampToLocaltime(it.updatedAt)
+                it.showedAt = timestampToLocaltime(it.showedAt)
+
+                logger.info("[PostService]getPost - findPost Complete [postId: ${it.postId}]")
+            })
+        }.doFinally {
+            stopWatch.stop()
+            logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+            stopWatch.taskInfo.forEach {
+                logger.info("name: ${it.taskName}, %: ${((it.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                        "elapsed: ${it.timeMillis} ms")
+            }
         }
     }
 
     /**
      * 글 업데이트
      */
-    override fun updatePost(postId: String, updatedPost: PostUpdateRequest): Mono<Any> {
+    fun updatePost(postId: String, updatedPost: PostUpdateRequest): Mono<PostIdResponse> {
         logger.info("[PostService]updatePost start")
 
         val query = Query().addCriteria(Criteria.where("postId").`is`(postId))
-        val update: Update = Update()
+        val update = Update()
 
         val stopWatch = StopWatch("[PostService]updatePost")
-        stopWatch.start("finding post")
-        return postRepository.findPost(query).switchIfEmpty(
-            Mono.error(CustomException.NoPost(postId))
-        ).flatMap { post ->
-            stopWatch.stop()
-            // 바뀐 내용이 없다고 판단된 경우
-            if((updatedPost.title.isNullOrEmpty() && updatedPost.content.isNullOrEmpty()) ||
-               (updatedPost.title.isNullOrEmpty() && updatedPost.content.equals(post.content)) ||
-               (updatedPost.content.isNullOrEmpty() && updatedPost.title!!.containsAll(post.title)) ||
-               (updatedPost.content.equals(post.content) && updatedPost.title!!.containsAll(post.title)))
-                Mono.error(CustomException.NotModified(postId))
 
-            else {
-                stopWatch.start("generate trace sequence")
-                this.commonService.generateSequence(SEQUENCE_NAME_TRACE.plus("_").plus(postId)).
-                flatMap { seq ->
-                    stopWatch.stop()
-                    stopWatch.start("move post to trace")
-                    this.traceRepository.insertTrace(Trace(
-                        version = seq,
-                        title = post.title,
-                        content = post.content,
-                        editor = post.author,
-                        editedAt = post?.updatedAt ?: post.createdAt,
-                        postId = post.postId
-                    )).flatMap {
-                        updatedPost.title?.let { update.set("title", updatedPost.title) }
-                        updatedPost.content?.let { update.set("content", updatedPost.content) }
-                        update.set("author", updatedPost.author)
-                        updatedPost.delYn?.let { update.set("delYn", updatedPost.delYn) }
-                        update.set("updatedAt", Timestamp.valueOf(LocalDateTime.now()).time)
-                        postRepository.updatePost(query, update)
-                    }.flatMap {
-                        Mono.just(TraceVersionResponse(postId, seq))
-                    }.doFinally {
-                        stopWatch.stop()
-                        logger.info(stopWatch.prettyPrint())
-                        logger.info("[PostService]updatePost end | ${stopWatch.shortSummary()}")
-                    }
-                }
+        updatedPost.title?.let { update.set("title", updatedPost.title) }
+        updatedPost.content?.let { update.set("content", updatedPost.content) }
+        update.set("author", updatedPost.author)
+        updatedPost.delYn?.let { update.set("delYn", updatedPost.delYn) }
+        update.set("updatedAt", Timestamp.valueOf(LocalDateTime.now()).time.toString())
+
+        stopWatch.start("updating post")
+        return this.postRepository.updatePost(query, update).switchIfEmpty(
+            // 바뀐 내용이 없다고 판단된 경우
+            Mono.error<Post?>(CustomException.NotModified(postId)).also {
+                logger.info("[PostService]updatePost - Nothing has changed")
+            }
+        ).zipWhen {
+            stopWatch.stop()
+            stopWatch.start("generating Sequence for trace")
+            this.commonService.generateSequence(SEQUENCE_NAME_TRACE.plus("_").plus(postId))
+        }.flatMap {
+            logger.info("[PostService]updatePost - updatePost and generateSequence Complete " +
+                    "[postId: ${it.t1.postId}, sequence: ${it.t2}]")
+            stopWatch.stop()
+            stopWatch.start("insert Trace")
+            this.traceRepository.insertTrace(it.run {
+                Trace(
+                    version = t2,
+                    title = t1.title,
+                    content = t1.content,
+                    editor = t1.author,
+                    editedAt = t1.updatedAt,
+                    postId = t1.postId
+                )
+            })
+        }.zipWhen {
+            redisTemplate.delete("post:${postId}")
+        }.flatMap {
+            Mono.just(PostIdResponse(it.t1.postId))
+        }.doFinally {
+            stopWatch.stop()
+            logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+            stopWatch.taskInfo.forEach {
+                logger.info("name: ${it.taskName}, %: ${((it.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                        "elapsed: ${it.timeMillis} ms")
             }
         }
     }
@@ -231,30 +266,45 @@ class PostService: PostServiceIn {
     /**
      * postId 기반 글 삭제
      */
-    override fun deletePost(postId: String): Mono<Any> {
+    fun deletePost(postId: String): Mono<PostIdResponse> {
         logger.info("[PostService]deletePost start")
 
         val query = Query().addCriteria(Criteria.where("postId").`is`(postId))
-        val update: Update = Update()
-        update.set("delYn", true)
+        val update: Update = Update().set("delYn", true)
 
         val stopWatch = StopWatch("[PostService]deletePost")
         stopWatch.start("Post delete")
-        return postRepository.deletePost(query, update).flatMap {
-            if(it.matchedCount > 0){    // post가 존재
-                if(it.modifiedCount > 0)    // 지워지지 않은 post
-                    Mono.just(PostIdResponse(postId))
-                else Mono.error(CustomException.AlreadyDeleted(postId))
+        return postRepository.deletePost(query, update).zipWhen {
+            redisTemplate.opsForValue().delete("post:${postId}")
+        }.flatMap {
+            if(it.t1.matchedCount > 0){    // post가 존재
+                if(it.t1.modifiedCount > 0) {   // 지워지지 않은 post
+                    redisTemplate.opsForValue().delete("post:${postId}").flatMap{
+                        logger.info("[PostService]deletePost - deletePost Complete [postId: ${postId}]")
+                        Mono.just(PostIdResponse(postId))
+                    }
+                } else {
+                    logger.info("[PostService]deletePost - deletePost failure: AlreadyDeleted [postId: ${postId}]")
+                    Mono.error(CustomException.AlreadyDeleted(postId))
+                }
+            } else {
+                logger.info("[PostService]deletePost - deletePost failure: NoPost [postId: ${postId}]")
+                Mono.error(CustomException.NoPost(postId))
             }
-            else Mono.error(CustomException.NoPost(postId))
-
+        }.doFinally {
+            stopWatch.stop()
+            logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+            stopWatch.taskInfo.forEach {
+                logger.info("name: ${it.taskName}, %: ${((it.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                        "elapsed: ${it.timeMillis} ms")
+            }
         }
     }
 
     /**
      * postId 기반 수정이력 목록 조회
      */
-    override fun getTraceList(postId: String, offset: Long, count: Long, q: String, startDate: String, endDate: String): Mono<Any> {
+    fun getTraceList(postId: String, offset: Long, count: Long, q: String, startDate: String, endDate: String): Mono<Any> {
         logger.info("[PostService]getTraceList start")
 
         val countAggOps = ArrayList<AggregationOperation>()
@@ -271,22 +321,28 @@ class PostService: PostServiceIn {
         listAggOps.add(match)
 
         // paging
-        val skip = Aggregation.skip((count - 1).toLong() * offset)
-        val cnt = Aggregation.limit(offset.toLong())
+        val skip = Aggregation.skip((count - 1) * offset)
+        val cnt = Aggregation.limit(offset)
         countAggOps.add(skip)
         countAggOps.add(cnt)
         listAggOps.add(skip)
         listAggOps.add(cnt)
 
-        // 시작일
-        if(startDate.isNotBlank()) {
+        val key = StringBuilder()
+            .append("trace:${postId}:${offset}:${count}")
+
+        if(q.isNotBlank())          key.append(":${q}")
+        if(startDate.isNotBlank()) {    // 시작일
+            key.append(":${startDate}")
+
             val startMatch = Aggregation.match(Criteria.where("editedAt").gte(startDate))
             countAggOps.add(startMatch)
             listAggOps.add(startMatch)
         }
 
-        // 종료일
-        if(endDate.isNotBlank()) {
+        if(endDate.isNotBlank()) {      // 종료일
+            key.append(":${endDate}")
+
             val endMatch = Aggregation.match(Criteria.where("editedAt").lte(endDate))
             countAggOps.add(endMatch)
             listAggOps.add(endMatch)
@@ -301,23 +357,44 @@ class PostService: PostServiceIn {
         return postRepository.findPostCount(Query()
             .addCriteria(Criteria.where("postId").`is`(postId))).flatMap {
             if(it == 0L)   // 해당 글이 없는 경우
-                Mono.error(CustomException.NoPost(postId))
-
+                Mono.error<Any?>(CustomException.NoPost(postId)).also{
+                    logger.info("[PostService]getTraceList - No Post [postId: ${postId}]")
+                }
             else {
                 stopWatch.stop()
                 stopWatch.start("trace list count")
-                traceRepository.findTraceCount(countAgg).flatMap { total ->
-                    stopWatch.stop()
-                    stopWatch.start("find trace list")
-                    traceRepository.findTraceList(listAgg).doOnNext {
-                        it.editedAt = TimestampToLocaltime(it.editedAt)
-                    }.collectList().flatMap { traces ->
-                        Mono.just(TraceListResponse(postId, total, traces))
-                    }.doFinally{
-                        stopWatch.stop()
-                        logger.info(stopWatch.prettyPrint())
-                        logger.info("[PostService]getTraceList end | ${stopWatch.shortSummary()}")
+
+                redisTemplate.hasKey(key.toString()).flatMap { result ->
+                    if(result) {
+                        redisTemplate.opsForValue().get(key.toString()).flatMap { redisValue ->
+                            Mono.just(mapper.readValue(redisValue, TraceListResponse::class.java))
+                        }
                     }
+
+                    else {
+                        traceRepository.findTraceCount(countAgg).zipWhen {
+                            stopWatch.stop()
+                            stopWatch.start("find Trace list")
+                            traceRepository.findTraceList(listAgg).doOnNext {
+                                it.editedAt = timestampToLocaltime(it.editedAt)
+                            }.collectList()
+                        }.flatMap { chunk ->
+                            logger.info("[PostService]getTraceList - findTraceCount and findTraceList Complete [count: ${chunk.t1}]")
+                            val response = TraceListResponse(postId, chunk.t1, chunk.t2)
+                            redisTemplate.opsForValue().set(key.toString(), mapper.writeValueAsString(response)).flatMap {
+                                redisTemplate.expire(key.toString(), Duration.ofMinutes(10)).flatMap {
+                                    Mono.just(response)
+                                }
+                            }
+                        }
+                    }
+                }
+            }.doFinally{
+                stopWatch.stop()
+                logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+                stopWatch.taskInfo.forEach { task ->
+                    logger.info("name: ${task.taskName}, %: ${((task.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                            "elapsed: ${task.timeMillis} ms")
                 }
             }
         }
@@ -326,17 +403,24 @@ class PostService: PostServiceIn {
     /**
      * postId, version 기반 수정이력 조회
      */
-    override fun getTrace(postId: String, version: String): Mono<Trace> {
+    fun getTrace(postId: String, version: String): Mono<Trace> {
         logger.info("[PostService]getTrace start")
         val stopWatch = StopWatch("[PostService]getTrace")
         stopWatch.start("find Trace")
+
         val query = Query().addCriteria(Criteria
             .where("postId").`is`(postId)
             .and("version").`is`(version))
-        return traceRepository.findTrace(query).doFinally {
+        return traceRepository.findTrace(query).doOnNext {
+            it.editedAt = timestampToLocaltime(it.editedAt)
+            logger.info("[PostService]getTrace - findTrace Complete [postId: ${postId}, version: $version")
+        }.doFinally {
             stopWatch.stop()
-            logger.info(stopWatch.prettyPrint())
-            logger.info("[PostService]getTrace end | ${stopWatch.shortSummary()}")
+            logger.info("total time: ${stopWatch.totalTimeMillis} ms")
+            stopWatch.taskInfo.forEach {
+                logger.info("name: ${it.taskName}, %: ${((it.timeNanos.toDouble()/stopWatch.totalTimeNanos)*100).roundToInt()}, " +
+                        "elapsed: ${it.timeMillis} ms")
+            }
         }
     }
 
@@ -344,21 +428,21 @@ class PostService: PostServiceIn {
      * q 조건식 해석
      */
     fun setQCriteria(q: String): Criteria? {
-        var criteria = Criteria()
+        val criteria = Criteria()
 
-        if(!q.isNullOrEmpty()) {
-            var qList = q.split(",")    // 하나의 식 단위로 분해
-            var params = ArrayList<String>()
+        if(q.isNotBlank()) {
+            val qList = q.split(",")    // 하나의 식 단위로 분해
+            val params = ArrayList<String>()
             var pos = -1
-            var whereCriteria = ArrayList<Criteria>()
+            val whereCriteria = ArrayList<Criteria>()
 
             // 검색 조건 조합을 식으로 분리
             qList.forEach {
                 // 온전한 조건 식
-                var regex1 = """.+%(eq|ne|lt|gt|ge|in|nin|like)\?[ㄱ-ㅎㅏ-ㅣ가-힣0-9a-zA-Z,]+"""
+                val regex1 = """.+%(eq|ne|lt|gt|ge|in|nin|like)\?[ㄱ-ㅎㅏ-ㅣ가-힣0-9a-zA-Z,]+"""
                     .trimMargin().toRegex()
                 // 조건이 없는 평범한 문자열(value)
-                var regex2 = """[ㄱ-ㅎㅏ-ㅣ가-힣0-9a-zA-Z]+""".trimMargin().toRegex()
+                val regex2 = """[ㄱ-ㅎㅏ-ㅣ가-힣0-9a-zA-Z]+""".trimMargin().toRegex()
                 // 조건에 맞지 않는 식이 존재
                 if(!(it.matches(regex1) || it.matches(regex2)))
                     return null
@@ -373,10 +457,10 @@ class PostService: PostServiceIn {
             }
 
             params.forEach {
-                var param = it.split("%")
+                val param = it.split("%")
                 if(param.size == 2) {
                     var paramName = param[0]
-                    var paramValue = param[1].split("?")    // 조건과 값 분리
+                    val paramValue = param[1].split("?")    // 조건과 값 분리
                     if(paramValue.size == 2) {
                         var valueType = "string"
 
@@ -411,31 +495,46 @@ class PostService: PostServiceIn {
     }
 
     /**
+     * Lang 선택시 해당 값을 뽑아 줌
+     */
+    fun extractValueFromLang(lang: String, item: ArrayList<HashMap<String, String>>): Any {
+        return when(lang) {
+            "ko" -> item.first { it["lang"].equals("ko") }["value"]!!
+            "en" -> item.first { it["lang"].equals("en") }["value"]!!
+            else -> item
+        }
+    }
+
+    /**
      * Timestamp -> LocalDataTime(yyyy-mm-dd HH:mm:ss)형태로 변경
      */
-    fun TimestampToLocaltime(timestamp: String) =
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp.toLong()),
-            TimeZone.getDefault().toZoneId()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).toString()
+    fun timestampToLocaltime(timestamp: String): String =
+        LocalDateTime.ofEpochSecond(timestamp.toLong(), 0, ZoneOffset.UTC)
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+
 
     /**
      * 글 리스트 범위 validation
      */
-    override fun listRangeValidation(offset: String, count: String): Mono<Any> {
+    fun listRangeValidation(offset: Long, count: Long): Mono<Any> {
+        lateinit var result: Mono<Any>
+
         // offset, count 범위를 벗어나는 경우
-        if(offset.isNotBlank() && offset.toLong() <= 0) {
-            return Mono.error(CustomException.OffsetInvalid())
-        }
-        if(count.isNotBlank() && count.toLong() <= 0) {
-            return Mono.error(CustomException.CountInvalid())
+        if(offset <= 0) {
+            result = Mono.error(CustomException.OffsetInvalid())
+        } else if(count <= 0) {
+            result = Mono.error(CustomException.CountInvalid())
+        } else {
+            result = Mono.just(true)
         }
 
-        return Mono.just(true)
+        return result
     }
 
     /**
      * 글 생성 요청 validation
      */
-    override fun createdPostValidation(createdPost: PostCreateRequest, currentTime: String){
+    fun createdPostValidation(createdPost: PostCreateRequest, currentTime: String){
         val validate = Validation.buildDefaultValidatorFactory().validator.validate(createdPost)
         if(validate.isNotEmpty())
             throw CustomException.InValidValue(
@@ -445,15 +544,16 @@ class PostService: PostServiceIn {
             )
 
         // 노출 시간이 현재보다 과거인지 체크
-        if(createdPost.showedAt != null && createdPost.showedAt!! < currentTime) {
-            throw CustomException.IncorrectExposureTime()
+        createdPost.showedAt?.let {
+            if(createdPost.showedAt!! < currentTime)
+                throw CustomException.IncorrectExposureTime()
         }
     }
 
     /**
      * 글 수정 요청 validation
      */
-    override fun updatedPostValidation(updatedPost: PostUpdateRequest) {
+    fun updatedPostValidation(updatedPost: PostUpdateRequest) {
         val validate = Validation.buildDefaultValidatorFactory().validator.validate(updatedPost)
         // 변경사항이 없거나 작성자 누락, 삭제 여부 포맷이 맞지 않는 경우
         if(validate.isNotEmpty())
@@ -467,26 +567,22 @@ class PostService: PostServiceIn {
     /**
      * 수정 이력 조건 validation
      */
-    override fun traceListValidation(offset: String, count: String,
-                                     startDate: String, endDate: String, currentTime: String): Mono<Any> {
+    fun traceListValidation(offset: Long, count: Long,
+                                     startDate: String, endDate: String): Mono<Any> {
+        val currentTime = LocalDateTime.now(ZoneOffset.UTC).atZone(ZoneOffset.UTC).toEpochSecond().toString()
+        lateinit var result: Mono<Any>
+
         // offset, count 범위를 벗어나는 경우 OR 값이 누락된 경우
-        if(offset.isNotBlank() && offset.toLong() <= 0) {
-            return Mono.error(CustomException.OffsetInvalid())
-        }
-        if(count.isNotBlank() && count.toLong() <= 0) {
-            return Mono.error(CustomException.CountInvalid())
-        }
+        if(offset <= 0) {
+            result = Mono.error(CustomException.OffsetInvalid())
+        } else if(count <= 0) {
+            result = Mono.error(CustomException.CountInvalid())
+        } else if(startDate.isNotBlank() && startDate >= currentTime) {    // 검색 시작일이 현재보다 미래일 경우
+            result = Mono.error(CustomException.InvalidDate())
+        } else if(endDate.isNotBlank() && startDate >= endDate) {  // 검색 종료일이 시작일보다 과거일 경우
+            result = Mono.error(CustomException.InvalidDate())
+        } else  result = Mono.just(true)
 
-        // 검색 시작일이 현재보다 미래일 경우
-        if(startDate.isNotBlank() && startDate >= currentTime) {
-            return Mono.error(CustomException.InvalidDate())
-        }
-
-        // 검색 종료일이 시작일보다 과거일 경우
-        if(endDate.isNotBlank() && startDate >= endDate) {
-            return Mono.error(CustomException.InvalidDate())
-        }
-
-        return Mono.just(true)
+        return result
     }
 }

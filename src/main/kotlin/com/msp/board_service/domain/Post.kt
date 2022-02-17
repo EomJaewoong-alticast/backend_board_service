@@ -1,5 +1,6 @@
 package com.msp.board_service.domain
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import org.hibernate.validator.constraints.Length
 import org.springframework.data.mongodb.core.mapping.Document
 import javax.validation.constraints.*
@@ -11,10 +12,7 @@ import javax.validation.constraints.*
 data class Post(
     // 글 ID
     @field:NotBlank(message = "postId does not exist")
-    @field:Digits(
-        integer = Integer.MAX_VALUE,
-        fraction = 0,
-        message = "postId does not matched")
+    @field:Pattern(regexp = """^[1-9]+[0-9]?$""", message = "postId does not matched")
     var postId: String,
 
     // 카테고리
@@ -29,24 +27,27 @@ data class Post(
 
     // 내용
     @field:NotBlank(message = "content does not exist")
-    @Length(max = 2000, message = "The maxinum content length is 2000")
+    @field:Length(max = 2000, message = "The maxinum content length is 2000")
     var content: String,
 
     // 작성자
     @field:NotBlank(message = "author does not exist")
-    @Length(min=2, max=20, message = "author's length must be between 2 to 20")
+    @field:Length(min=2, max=20, message = "author's length must be between 2 to 20")
     var author: String,
 
     // 생성 시간
     @field:NotBlank(message = "createdAt does not exist")
+    @field:Pattern(regexp = """^[1-9]+[0-9]?$""", message = "createdAt does not matched")
     var createdAt: String,
 
     // 수정 시간
     @field:NotBlank(message = "updatedAt does not exist")
+    @field:Pattern(regexp = """^[1-9]+[0-9]?$""", message = "updatedAt does not matched")
     var updatedAt: String,
 
     // 노출 시간
     @field:NotBlank(message = "showedAt does not exist")
+    @field:Pattern(regexp = """^[1-9]+[0-9]?$""", message = "showedAt does not matched")
     var showedAt: String,
 
     // 삭제 여부

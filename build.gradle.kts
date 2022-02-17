@@ -18,6 +18,8 @@ plugins {
 
 apply(plugin = "com.bmuschko.docker-remote-api")
 
+var kotlinxCoroutinesReactorVersion: String by extra
+
 java {
 	java.sourceCompatibility = JavaVersion.VERSION_11
 	targetCompatibility = JavaVersion.VERSION_11
@@ -32,8 +34,6 @@ repositories {
 	mavenCentral()
 }
 
-var kotlinxCoroutinesReactorVersion: String by extra
-
 dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")													// Kotlin 리플렉션 라이브러리(Spring Framework 5에서 필수)
 	implementation("org.jetbrains.kotlin:kotlin-stdlib")													// Kotlin 표준 라이브러리의 Java8 변형
@@ -43,6 +43,8 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")					// mongodb
+	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")						// redis
+  
 	implementation("org.springframework.boot:spring-boot-starter-webflux")									// webflux
 	implementation("org.springframework.boot:spring-boot-gradle-plugin:2.5.0")
 
@@ -85,10 +87,10 @@ tasks.bootJar {
 val springProfile: String by project
 val createDockerfile by tasks.creating(Dockerfile::class) {
 	destFile.set(project.file("./build/docker/Dockerfile"))
-	var javaOpts = ""
-	var execJar = "${project.name}-${version}.jar"
-	var profile = if(springProfile.isNullOrEmpty()) "default" else springProfile // gradle.properties에 정의됨
-	var RAIDEA_PROFILE = profile
+	val javaOpts = ""
+	val execJar = "${project.name}-${version}.jar"
+	val profile = if(springProfile.isNullOrEmpty()) "default" else springProfile // gradle.properties에 정의됨
+	val RAIDEA_PROFILE = profile
 
 	from("openjdk:11-slim")
 	exposePort(39001)

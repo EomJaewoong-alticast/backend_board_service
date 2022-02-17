@@ -1,6 +1,5 @@
 package com.msp.board_service.utils
 
-import com.msp.board_service.exception.CustomException
 import org.springframework.data.mongodb.core.query.Criteria
 import java.util.*
 
@@ -70,7 +69,7 @@ class MakeWhereCriteria {
                     when(valueType) {
                         "string" -> {
                             if(value == "null") {
-                                Criteria.where(param).`nin`(null, "", "null")
+                                Criteria.where(param).nin(null)
                             } else {
                                 Criteria.where(param).ne(value)
                             }
