@@ -5,7 +5,7 @@ import org.springframework.boot.runApplication
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient
 
 @SpringBootApplication
-@EnableEurekaClient
+@EnableEurekaClient				// EurekaClient
 class BoardServiceApplication
 
 fun main(args: Array<String>) {

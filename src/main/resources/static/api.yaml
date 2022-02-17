@@ -16,16 +16,14 @@ tags:
   - name: Others
     description: Other feature management
 schemes:
-#  - https
   - http
-
 securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "Authorization"
-    in: "header"
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: Authorization
 security:
-  - api_key: []
+  - ApiKeyAuth: []
 
 paths:
   /other:

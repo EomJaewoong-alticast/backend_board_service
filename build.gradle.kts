@@ -44,6 +44,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")					// mongodb
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")						// redis
+  
 	implementation("org.springframework.boot:spring-boot-starter-webflux")									// webflux
 	implementation("org.springframework.boot:spring-boot-gradle-plugin:2.5.0")
 
