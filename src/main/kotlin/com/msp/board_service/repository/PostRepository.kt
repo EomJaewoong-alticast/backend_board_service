@@ -2,20 +2,18 @@ package com.msp.board_service.repository
 
 import com.mongodb.client.result.UpdateResult
 import com.msp.board_service.domain.Post
-import com.msp.board_service.domain.Trace
-import com.msp.board_service.domain.request.PostUpdateRequest
 import com.msp.board_service.domain.response.ListInPostResponse
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.findOne
-import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
-import org.springframework.data.mongodb.core.query.where
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+
+//TODO: DB logging
 
 @Repository
 class PostRepository(private val template: ReactiveMongoTemplate) {
@@ -53,13 +51,13 @@ class PostRepository(private val template: ReactiveMongoTemplate) {
      * 게시글 조회 - Query
      */
     fun findPost(query: Query): Mono<Post> =
-        template.findOne(query, COLLECTION_NM)
+        template.findOne<Post>(query, COLLECTION_NM)
 
     /**
      * 게시글 수정 - Query, update
      */
-    fun updatePost(query: Query, update: Update): Mono<UpdateResult> =
-        template.updateFirst(query, update, COLLECTION_NM)
+    fun updatePost(query: Query, update: Update): Mono<Post> =
+        template.findAndModify(query, update, Post::class.java)
 
     /**
      * 게시글 삭제 - Query, update

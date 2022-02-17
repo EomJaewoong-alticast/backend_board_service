@@ -1,6 +1,5 @@
 package com.msp.board_service.utils
 
-import com.msp.board_service.exception.CustomException
 import org.springframework.data.mongodb.core.query.Criteria
 import java.util.*
 
@@ -70,34 +69,34 @@ class MakeWhereCriteria {
                     when(valueType) {
                         "string" -> {
                             if(value == "null") {
-                                Criteria.where(param).`nin`(null, "", "null")
+                                Criteria.where(param).nin(null)
                             } else {
                                 Criteria.where(param).ne(value)
                             }
                         }
                         "int" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toInt())
                             }
                         }
                         "long" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toLong())
                             }
                         }
                         "float" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toFloat())
                             }
                         }
                         "double" -> {
-                            if(value == null) {
+                            if(value == "null") {
                                 Criteria.where(param).ne(null)
                             } else {
                                 Criteria.where(param).ne(value.toDouble())
