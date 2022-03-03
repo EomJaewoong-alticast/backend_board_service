@@ -29,6 +29,8 @@ class PostRouter {
 
                 GET("posts/{postId}/traces", postHandler::getTraceList)         // 수정 이력 목록 조회
                 GET("posts/{postId}/traces/{version}", postHandler::getTrace)   // 수정 이력 조회
+
+                GET("/other", postHandler::getOtherList)      // Feign Client 호출용
             }
         }
     }

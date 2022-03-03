@@ -10,7 +10,7 @@ spring:
       # uri: mongodb://mango:banana@mongo-1:27017,mongo-2:27017,mongo-3:27017/mongodemo?replicaSet=turple
       uri: mongodb+srv://mango:banana4apple@dev.2iplu.mongodb.net/mongodemo?retryWrites=true&w=majority
   application:
-    name: board-service
+    name: jaewoong-service
   redis:
     # host: host.docker.internal  # redis(in docker)
     host: localhost               # redis(in localhost)
@@ -30,6 +30,10 @@ spring:
     scheduled:
       skipPattern: org.springframework.cloud.netflix.hystrix.stream.HystrixStreamTask
 
+feign:
+  hystrix:
+    enabled: true # hystrix 사용
+
 eureka:
   instance:
     preferIpAddress: true # 서비스 이름 대신 서비스 Ip 주소 등록 옵션
@@ -45,6 +49,6 @@ eureka:
 
 info:
   app:
-    name: Board Service
-    description: Board Service
+    name: jaewoong Service
+    description: jaewoong Board Service
     version: 1.0.0

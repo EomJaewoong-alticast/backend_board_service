@@ -281,4 +281,14 @@ class PostHandler(val postService: PostService) {
             }
         }
     }
+
+    /**
+     * feign 통신 요청 - 12
+     */
+    fun getOtherList(req: ServerRequest): Mono<ServerResponse> {
+        return ok()
+            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .body(this.postService.getOtherList(req.queryParam("page").orElseGet { "1" }.toLong(),
+                req.queryParam("size").orElseGet { "1" }.toLong()))
+    }
 }

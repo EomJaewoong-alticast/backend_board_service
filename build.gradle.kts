@@ -53,6 +53,8 @@ dependencies {
 
 	// spring cloud
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.7.RELEASE")
+	implementation("org.springframework.cloud:spring-cloud-starter-openfeign:2.2.7.RELEASE")				// feign client
+	implementation("org.springframework.cloud:spring-cloud-starter-netflix-hystrix:2.2.7.RELEASE")			// fallback을 위한 hystirx
 
 	// swagger
 	implementation("io.github.cdimascio:openapi-spring-webflux-validator:3.3.0")

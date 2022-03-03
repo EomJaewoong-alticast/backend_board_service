@@ -12,6 +12,7 @@ import com.msp.board_service.domain.response.PostListResponse
 import com.msp.board_service.domain.response.PostResponse
 import com.msp.board_service.domain.response.TraceListResponse
 import com.msp.board_service.exception.CustomException
+import com.msp.board_service.proxy.TaehwanServiceProxy
 import com.msp.board_service.repository.PostRepository
 import com.msp.board_service.repository.TraceRepository
 import com.msp.board_service.utils.MakeWhereCriteria
@@ -60,6 +61,9 @@ class PostService{
 
     @Autowired
     lateinit var commonService: CommonService
+
+    @Autowired
+    lateinit var taehwanServiceProxy: TaehwanServiceProxy
 
     /**
      * 게시글 목록 조회
@@ -422,6 +426,15 @@ class PostService{
                         "elapsed: ${it.timeMillis} ms")
             }
         }
+    }
+
+    /**
+     * fegin client 통신
+     */
+    fun getOtherList(page: Long, size: Long): Mono<Any> {
+        val value = taehwanServiceProxy.getBoardOther(page, size)
+
+        return Mono.just(value)
     }
 
     /**
