@@ -8,7 +8,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-basePath: /board-service/v1.0
+basePath: /jaewoong-service/v1.0
 
 tags:
   - name: Posts
@@ -37,9 +37,40 @@ paths:
         - application/json
       produces:
         - application/json
+      parameters:
+        - name: page
+          in: query
+          description: 페이지
+          required: true
+          type: integer
+          format: int32
+          default: 1
+        - name: size
+          in: query
+          description: 페이지 크기
+          required: true
+          type: integer
+          format: int32
+          default: 10
       responses:
         200:
-          description: ok
+          description: successful operation
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: OK
+              result:
+                $ref: '#/definitions/ResponseGetPosts'
+        404:
+          $ref: '#/responses/NoExistMethodError'
+
+        500:
+          $ref: '#/responses/InternalError'
 
   /posts:
     # 게시글 목록 조회
